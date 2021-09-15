@@ -1,4 +1,4 @@
-# SuperDD
+# react-lazy-dropdown
 
 [react-lazy-dropdown] is a very useful react component for multi selection dropdown based on
  lazy loading option by API calls with async lazy Filtering, Sorting 
