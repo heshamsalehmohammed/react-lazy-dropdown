@@ -1,0 +1,241 @@
+.normal-select {
+  display: none;
+}
+
+.lazyselect-select {
+  /*  width: 33vw; */
+  position: relative;
+}
+
+.lazyselect-select-output {
+  scrollbar-width: none;
+  display: flex;
+  background: var(--color-primary);
+  padding: 0.1em 0.8em;
+  font-size: 1rem;
+  color: var(--color-accent);
+  border-radius: 0.2rem;
+  user-select: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  overflow-x: auto;
+  justify-content: space-between;
+}
+
+.lazyselect-select-output p {
+  padding: 0.5em;
+  margin: 0;
+}
+
+.lazyselect-select-output p.hide {
+  display: none;
+}
+
+.lazyselect-select-output span {
+  display: inline-block;
+  background: var(--color-accent);
+  color: var(--color-primary);
+  padding: 0.5em;
+  border-radius: 1rem;
+  min-width: max-content;
+}
+
+.lazyselect-select-box {
+  width: calc(100% - 1.6em);
+  position: absolute;
+  height: 250px;
+  list-style: none;
+  background: var(--color-primary);
+  margin-top: 0.5em;
+  padding: 0.5em 0.8em;
+  padding-bottom: 0%;
+  padding-top: 0%;
+  overflow-y: auto;
+  border-radius: 0.2rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(-20%);
+  transition: 300ms linear;
+  z-index: -2;
+  overflow-x: hidden;
+  /* position: relative; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: white;
+}
+
+.lazyselect-select-box.show {
+  z-index: 2;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lazyselect-select-box li {
+  display: inline-block;
+  background: var(--color-accent);
+  color: var(--color-primary);
+  padding: 0.5em;
+  border-radius: 1em;
+  margin-right: 0.4em;
+  margin-bottom: 0.4em;
+  cursor: default;
+  user-select: none;
+}
+
+.lazyselect-select-box li.active {
+  outline: 1px solid var(--color-accent);
+  outline-offset: -1px;
+  color: var(--color-accent);
+  background: var(--color-primary);
+  filter: contrast(120%);
+}
+
+.lazyselect-select-box li:not(.active):hover {
+  filter: contrast(120%);
+}
+
+.lazyselect-search-input {
+  padding: 0.3em;
+  padding-left: 0.5em;
+  margin: 0.1em;
+  outline: none;
+  border-radius: 0.5em;
+  outline: none;
+  border-color: #504c4c38;
+}
+
+.lazyselect-selectall-input {
+  padding: 0.2em;
+  border-radius: 0.5em;
+  margin: 0.1em;
+  outline: none;
+}
+
+.lazyselectcheckbox-list-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  flex-grow: 1;
+}
+
+.lazyselectcheckbox-container {
+  padding: 0.25em;
+  border: #ffffff00 1px solid;
+  display: flex;
+}
+
+.lazyselectcheckbox-active {
+  background-color: rgba(30, 167, 253, 6%);
+  border: #ffffff 1px solid;
+  border-radius: 0.2em;
+}
+
+.lazyselectcheckbox-label {
+  padding: 0.25em;
+  margin: 0;
+  width: 80%;
+  align-content: center;
+  bottom: 13%;
+}
+
+.lazyselect-selectall-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+  justify-content: space-between;
+}
+
+.lazyselect-selectall-container-no-items {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+  justify-content: space-between;
+  align-self: center;
+}
+
+.lazyselectcheckbox {
+  transform: scale3d(1.5, 1.5, 1.5);
+  margin: 0.5em;
+}
+
+.lazyselect-search-input-container {
+  position: sticky;
+  top: 0;
+  padding: 0.75em;
+  padding-bottom: 0.25em;
+  justify-content: center;
+  background-color: #fff;
+  z-index: 100000;
+  display: flex;
+  align-content: flex-start;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  box-shadow: 0 9px 5px -5px #80808038;
+}
+
+.lazyselect-select-buttons {
+  position: sticky;
+  bottom: -1px;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  background-color: #fff;
+  align-self: center;
+}
+
+.lazyselect-select-buttons button {
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.1rem 0.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+  margin: 0.3em;
+  cursor: pointer;
+  font-family: monospace;
+}
+
+.lazyselect-select-buttons button:hover {
+  color: #fff;
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #1ea7fd;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #0052cc;
+}
+
+.sort-button {
+  font-size: medium;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0.1em;
+}

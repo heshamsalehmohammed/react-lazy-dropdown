@@ -1,0 +1,77 @@
+{
+  "name": "react-lazy-dropdown",
+  "version": "1.0.0",
+  "description": "[react-lazy-dropdown] is a very useful react component for multi selection dropdown based on lazy loading option by API calls with async lazy Filtering, Sorting and Tags with custom functions can be provided from the outside ",
+  "keywords": [
+    "react",
+    "components",
+    "component",
+    "ui",
+    "dropdown",
+    "drop-down",
+    "combobox",
+    "combo-box",
+    "multiselect",
+    "multi-select",
+    "select",
+    "options",
+    "tags",
+    "tags-container",
+    "tag-container",
+    "checkbox",
+    "filter",
+    "sort",
+    "filterable",
+    "sortable",
+    "lazy loading",
+    "Api Calls",
+    "lazy filtering",
+    "async filtering",
+    "async lazy loading options",
+    "api call on scroll",
+    "option pagination async"
+  ],
+  "private": false,
+  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heshamsalehmohammed/react-lazy-dropdown.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\"",
+    "build": "del dist && NODE_ENV=production babel src/components --out-dir dist --copy-files",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
+  },
+  "author": "Hesham Saleh",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.14.5",
+    "@babel/core": "^7.14.6",
+    "@babel/preset-env": "^7.14.5",
+    "@babel/preset-react": "^7.14.5",
+    "@storybook/addon-actions": "^6.2.9",
+    "@storybook/addon-essentials": "^6.2.9",
+    "@storybook/addon-links": "^6.2.9",
+    "@storybook/react": "^6.2.9",
+    "babel-loader": "^8.2.2",
+    "babel-preset-minify": "^0.5.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
+  },
+  "peerDependencies": {
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "axios": "^0.21.1",
+    "react-redux": "^7.2.4",
+    "react-toastify": "^7.0.4"
+  }
+}
