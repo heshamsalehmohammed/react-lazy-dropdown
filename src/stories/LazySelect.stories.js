@@ -1,12 +1,14 @@
 import React, {useState, useEffect} from 'react';
 import {storiesOf} from '@storybook/react';
 
-//import {LazySelect} from '../../dist/index';
-import {LazySelect} from '../components/index';
+import {LazySelect} from '../../dist/index'; 
+//import {LazySelect} from '../components/index';
 
 const stories = storiesOf('App Test', module);
 
 stories.add('App', () => {
+
+
   const displayShowMoreOptionCallBack = (selectedOptions) => {
     alert(selectedOptions.length +" items selected");
   };

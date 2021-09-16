@@ -45,7 +45,7 @@ const LazySelect = React.memo((props) => {
   const [localDataList, setLocalDataList] = useState([]);
   const [selectedDataList, setSelectedDataList] = useState([]);
 
-  const [startFrom, setStartFrom] = useState(0);
+  const [startFrom, setStartFrom] = useState(1);
 
   const optionsContainerRef = useRef(null);
 
@@ -220,7 +220,6 @@ const LazySelect = React.memo((props) => {
   };
 
   const toggleShow = (e) => {
-    console.log(e.target);
     if (!e.target.classList.contains('tag-close-icon')) {
       if (isShown) {
         setIsShown(false);

@@ -1,5 +1,5 @@
 import './TagsInput.css';
-import React, {useState,useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 
 const TagsInput = React.memo((props) => {
   const {
@@ -29,13 +29,16 @@ const TagsInput = React.memo((props) => {
             </span>
           </li>
         ))}
-        {selectedDataList.length > maximunOptionToShow && displayShowMoreOption && (
-          <li
-            className="tag"
-            onClick={(e) => displayShowMoreOptionCallBack(selectedDataList)}>
-            <span className="tag-title">{'Show More'}</span>
-          </li>
-        )}
+        {selectedDataList.length > maximunOptionToShow &&
+          displayShowMoreOption && (
+            <li
+              className="tag"
+              onClick={(e) => displayShowMoreOptionCallBack(selectedDataList)}>
+              <span className="tag-title">{`+${
+                selectedDataList.length - maximunOptionToShow
+              } More`}</span>
+            </li>
+          )}
       </ul>
       <input
         type="text"

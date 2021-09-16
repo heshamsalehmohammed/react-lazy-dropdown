@@ -1,6 +1,6 @@
 {
   "name": "react-lazy-dropdown",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "[react-lazy-dropdown] is a very useful react component for multi selection dropdown based on lazy loading option by API calls with async lazy Filtering, Sorting and Tags with custom functions can be provided from the outside ",
   "keywords": [
     "react",
@@ -71,7 +71,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
     "axios": "^0.21.1",
-    "react-redux": "^7.2.4",
+    "core-js": "^3.6.5",
     "react-toastify": "^7.0.4"
   }
 }
