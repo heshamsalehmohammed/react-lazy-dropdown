@@ -2,7 +2,7 @@ import './LazySelect.css';
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import TagsInput from '../TagsInput/TagsInput';
 import {getDataList, parseResponseResultsHierarchy} from '../Common/HTTPHelper';
-import InfiniteScroll from 'react-infinite-scroll-component';
+import {isElementAtBottom} from '../Common/ScrollHelper';
 
 const LazySelect = React.memo((props) => {
   const {
@@ -38,61 +38,16 @@ const LazySelect = React.memo((props) => {
 
   const [search, setSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isShown, setIsShown] = useState(false);
   const [localDataList, setLocalDataList] = useState([]);
   const [selectedDataList, setSelectedDataList] = useState([]);
 
-  const [startFrom, setStartFrom] = useState(1);
+  const [startFrom, setStartFrom] = useState(0);
 
-  /*   const optionsContainerRef = useRef(null);
-  const lastOptionRef = useRef(null); */
-
-  const fetchDataList = async () => {
-    setLoading(true);
-    setHasError(false);
-    const requestInfo = prepareRequestInfo();
-    let response = await getDataList(
-      requestInfo.method,
-      requestInfo.baseURL,
-      requestInfo.data,
-      requestInfo.headers
-    );
-    if (response.success) {
-      let newLocalDLLength = 0;
-      setLocalDataList((prevState) => {
-        const newLocalDL = [
-          ...prevState,
-          ...appendIsSelectedToFetchedData(
-            parseResponseResultsHierarchy(
-              ResponseResultsHierarchy,
-              response.data
-            )
-          ),
-        ];
-        newLocalDLLength = newLocalDL.length;
-        return newLocalDL;
-      });
-      setStartFrom(newLocalDLLength);
-    } else {
-      setHasError(true);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchDataList();
-  }, []);
-
-  useEffect(() => {
-    if (search.trim() !== '' || scrolled) {
-      fetchDataList();
-      if (scrolled) {
-        setScrolled(false);
-      }
-    }
-  }, [search, scrolled]);
+  const optionsContainerRef = useRef(null);
 
   const prepareRequestInfo = () => {
     let baseURL = ApiURL;
@@ -123,9 +78,88 @@ const LazySelect = React.memo((props) => {
     };
   };
 
-  const appendIsSelectedToFetchedData = (data) => {
-    return data?.map((dl) => ({...dl, isSelected: false})) ?? [];
+  const prevRequestInfo = useRef(prepareRequestInfo());
+
+  const fetchDataList = async (init = false) => {
+    setLoading(true);
+    setHasError(false);
+    const requestInfo = prepareRequestInfo();
+    console.log(
+      'Request Info ',
+      requestInfo,
+      ' previous request info ',
+      prevRequestInfo.current
+    );
+    if (
+      init ||
+      requestInfo.data[StartFromRequestParamName] !==
+        prevRequestInfo.current.data[StartFromRequestParamName] ||
+      requestInfo.data[SearchRequestParamName] !==
+        prevRequestInfo.current.data[SearchRequestParamName]
+    ) {
+      console.log('Request Info ', requestInfo);
+      let response = await getDataList(
+        requestInfo.method,
+        requestInfo.baseURL,
+        requestInfo.data,
+        requestInfo.headers
+      );
+      if (response.success) {
+        let newLocalDLLength = 0;
+        setLocalDataList((prevState) => {
+          const newLocalDL = [
+            ...prevState,
+            ...parseResponseResultsHierarchy(
+              ResponseResultsHierarchy,
+              response.data
+            ),
+          ];
+          newLocalDLLength = newLocalDL.length;
+          return newLocalDL;
+        });
+        setStartFrom(newLocalDLLength);
+      } else {
+        setHasError(true);
+      }
+      prevRequestInfo.current = requestInfo;
+    }
+    if (scrolled) {
+      setScrolled(false);
+    }
+    if (searched) {
+      setSearched(false);
+    }
+    setLoading(false);
   };
+
+  useEffect(() => {
+    fetchDataList(true);
+  }, []);
+
+  useEffect(() => {
+    if (scrolled) {
+      console.log('useEffect for scroll');
+      fetchDataList();
+    }
+  }, [scrolled]);
+
+  /*   useEffect(() => {
+    if (searched) {
+      console.log('useEffect for search');
+      fetchDataList();
+    }
+  }, [search]); */
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searched) {
+        setLocalDataList([]);
+        console.log('useEffect for search');
+        fetchDataList();
+      }
+    }, 700);
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
 
   const handleOptionSelectedUnselected = (checked, objectOfList) => {
     if (IsMulti) {
@@ -179,40 +213,37 @@ const LazySelect = React.memo((props) => {
 
   const onSearchChange = (e) => {
     setStartFrom(1);
-    setLocalDataList([]);
     if (e.target.value !== search) {
       setSearch(e.target.value);
+      setSearched(true);
     }
   };
 
-  const toggleShow = () => {
-    if (isShown) {
-      setIsShown(false);
-      setSearch('');
-    } else {
-      setIsShown(true);
+  const toggleShow = (e) => {
+    console.log(e.target);
+    if (!e.target.classList.contains('tag-close-icon')) {
+      if (isShown) {
+        setIsShown(false);
+        setSearch('');
+      } else {
+        setIsShown(true);
+      }
     }
   };
+
+  const prevAtBottom = useRef(false);
 
   const optionsContainerScrollHandler = () => {
-    /*const optionsContainer = optionsContainerRef.current;
-     if (optionsContainer.scrollHeight - optionsContainer.scrollTop - optionsContainer.clientHeight < 3) {
+    const optionsContainer = optionsContainerRef.current;
+
+    const atBottom = isElementAtBottom(optionsContainer, 1);
+    console.log('at bottom', atBottom, 'prev at bottom ', prevAtBottom.current);
+
+    if (atBottom && atBottom !== prevAtBottom.current) {
+      console.log('set scrolled', atBottom);
       setScrolled(true);
-      console.log('scrolled');
     }
-
-    const lastOption = lastOptionRef.current;
-
-    const rect = lastOption.getBoundingClientRect();
-    var lastOptionOffsetTop = rect.top + optionsContainer.scrollTop;
-
-    if (
-      lastOptionOffsetTop - optionsContainer.scrollTop <
-      lastOption.clientHeight
-    ) {
-      setScrolled(true);
-      console.log('scrolled');
-    } */
+    prevAtBottom.current = atBottom;
   };
 
   useEffect(() => {
@@ -287,16 +318,13 @@ const LazySelect = React.memo((props) => {
             </div>
           </div>
           <div
+            ref={optionsContainerRef}
             className={
               isShown ? 'lazyselect-select-box show' : 'lazyselect-select-box'
-            }>
+            }
+            onScroll={optionsContainerScrollHandler}>
             <div className="lazyselectcheckbox-list-container">
-              <InfiniteScroll
-                dataLength={500}
-                next={fetchDataList}
-                hasMore={true}>
-                {getLiListItems()}
-              </InfiniteScroll>
+              {getLiListItems()}
             </div>
             {loading && (
               <div className="lazyselect-select-buttons">Loading ....</div>
