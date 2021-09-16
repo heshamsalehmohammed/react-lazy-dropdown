@@ -1,5 +1,7 @@
 import './LazySelect.css';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
+import TagsInput from '../TagsInput/TagsInput';
+import {getDataList, parseResponseResultsHierarchy} from '../Common/HTTPHelper';
 
 const LazySelect = React.memo((props) => {
   const {
@@ -7,54 +9,150 @@ const LazySelect = React.memo((props) => {
     UniqueKey,
     DisplayBy,
     PlaceHolder = 'Select Items ...',
-    Filterable = true,
+    useQueryParams = false,
+    useBodyParams = false,
+    RequestMethod = 'post',
+    ExistingRequestParams = {},
+    ExistingRequestHeaders = {},
     PageSize = 10,
-    SearchQueryParamName = 'search',
-    PageNumberQueryParamName = 'page',
-    PageSizeQueryParamName = 'size',
+    SearchRequestParamName = 'search',
+    StartFromRequestParamName = 'from',
+    PageSizeRequestParamName = 'size',
+    ResponseResultsHierarchy = '',
+    DisplayShowMoreOption = true,
+    MaximunOptionToShow = -1,
+    DisplayShowMoreOptionCallBack = () => {},
   } = props;
 
   if (!UniqueKey) {
     throw new Error('the name of the UniqueKey of your data must be provided');
   }
 
+  if (!ApiURL) {
+    throw new Error('ApiURL for your data must be provided');
+  }
+
   const [search, setSearch] = useState('');
+  const [scrolled, setScrolled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [isShown, setIsShown] = useState(false);
   const [localDataList, setLocalDataList] = useState([]);
+  const [selectedDataList, setSelectedDataList] = useState([]);
 
-  const [pageNumber, setPageNumber] = useState(1);
+  const [startFrom, setStartFrom] = useState(1);
+
+  const optionsContainerRef = useRef(null);
+
+  const fetchDataList = async () => {
+    setLoading(true);
+    setHasError(false);
+    const requestInfo = prepareRequestInfo();
+    let response = await getDataList(
+      requestInfo.method,
+      requestInfo.baseURL,
+      requestInfo.data,
+      requestInfo.headers
+    );
+    if (response.success) {
+      setLocalDataList((prevState) => {
+        return [
+          ...prevState,
+          ...appendIsSelectedToFetchedData(
+            parseResponseResultsHierarchy(
+              ResponseResultsHierarchy,
+              response.data
+            )
+          ),
+        ];
+      });
+      setStartFrom(localDataList.length);
+    } else {
+      setHasError(true);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchDataList();
+  }, []);
+
+  useEffect(() => {
+    if (search || scrolled) {
+      fetchDataList();
+      if (scrolled) {
+        setScrolled(false);
+      }
+    }
+  }, [search, scrolled]);
+
+  const prepareRequestInfo = () => {
+    let baseURL = ApiURL;
+    let data = {};
+
+    if (useQueryParams) {
+      baseURL += '?';
+      for (const key in ExistingRequestParams) {
+        baseURL += `${key}=${ExistingRequestParams[key]}&`;
+      }
+      baseURL += `${SearchRequestParamName}=${search}&`;
+      baseURL += `${StartFromRequestParamName}=${startFrom}&`;
+      baseURL += `${PageSizeRequestParamName}=${PageSize}`;
+    } else if (useBodyParams) {
+      data = {
+        ...ExistingRequestParams,
+      };
+      data[SearchRequestParamName] = search;
+      data[StartFromRequestParamName] = startFrom;
+      data[PageSizeRequestParamName] = PageSize;
+    }
+
+    return {
+      method: RequestMethod,
+      baseURL: baseURL,
+      data: data,
+      headers: ExistingRequestHeaders,
+    };
+  };
 
   const appendIsSelectedToFetchedData = (data) => {
     return data?.map((dl) => ({...dl, isSelected: false})) ?? [];
   };
 
-
-  const handleCheckboxClicked = (event, objectOfList) => {
-    setLocalDataList(
-      localDataList.map((ldl) => ({
-        ...ldl,
-        isSelected:
-          ldl[UniqueKey] == objectOfList[UniqueKey]
-            ? event.target.checked
-            : ldl.isSelected,
-      }))
-    );
+  const handleOptionSelectedUnselected = (checked, objectOfList) => {
+    setSelectedDataList((prevState) => {
+      if (checked) {
+        return [...prevState, objectOfList];
+      }
+      return [
+        ...prevState.filter(
+          (ldl) => ldl[UniqueKey] !== objectOfList[UniqueKey]
+        ),
+      ];
+    });
   };
 
   const getLiListItems = () => {
     return localDataList.map((value, index) => {
+      let optionInSelectedList = selectedDataList.find(
+        (ldl) => ldl[UniqueKey] === value[UniqueKey]
+      );
+      let optionSelected = optionInSelectedList ? true : false;
+
       return (
         <div
           key={index}
           className={
             'lazyselectcheckbox-container' +
-            (value.isSelected ? ' lazyselectcheckbox-active' : '')
+            (optionSelected ? ' lazyselectcheckbox-active' : '')
           }>
           <input
             type="checkbox"
             className="lazyselectcheckbox"
-            onChange={(e) => handleCheckboxClicked(e, value)}
-            checked={value.isSelected}
+            onChange={(e) =>
+              handleOptionSelectedUnselected(e.target.checked, value)
+            }
+            checked={optionSelected}
           />
           <label className="lazyselectcheckbox-label">{value[DisplayBy]}</label>
         </div>
@@ -75,6 +173,14 @@ const LazySelect = React.memo((props) => {
     }
   };
 
+  const optionsContainerScrollHandler = () => {
+    const element = optionsContainerRef.current;
+    if (element.scrollHeight - element.scrollTop - element.clientHeight < 3) {
+      setScrolled(true);
+      console.log('scrolled');
+    }
+  };
+
   return (
     <div className="lazyselect">
       <div className="lazyselect-select-wrapper">
@@ -86,7 +192,18 @@ const LazySelect = React.memo((props) => {
                 ? 'lazyselect-select-output active'
                 : 'lazyselect-select-output'
             }>
-            <p>{PlaceHolder}</p>
+            <TagsInput
+              uniqueKey={UniqueKey}
+              displayBy={DisplayBy}
+              placeHolder={PlaceHolder}
+              dataList={selectedDataList}
+              onSearchChange={onSearchChange}
+              searchValue={search}
+              handleOptionSelectedUnselected={handleOptionSelectedUnselected}
+              displayShowMoreOption={DisplayShowMoreOption}
+              maximunOptionToShow={MaximunOptionToShow}
+              displayShowMoreOptionCallBack={DisplayShowMoreOptionCallBack}
+            />
             <div className="icon">
               <div className="dropdown"></div>
             </div>
@@ -94,28 +211,20 @@ const LazySelect = React.memo((props) => {
           <div
             className={
               isShown ? 'lazyselect-select-box show' : 'lazyselect-select-box'
-            }>
-            {Filterable && (
-              <div className="lazyselect-search-input-container">
-                <input
-                  className="lazyselect-search-input"
-                  onChange={onSearchChange}
-                  value={search}
-                  type={'text'}
-                />
-                {localDataList.length === 0 && (
-                  <div className="lazyselect-selectall-container-no-items">
-                    No items Found
-                  </div>
-                )}
-              </div>
-            )}
+            }
+            ref={optionsContainerRef}
+            onScroll={optionsContainerScrollHandler}>
             <div className="lazyselectcheckbox-list-container">
               {getLiListItems()}
             </div>
-            <div className="lazyselect-select-buttons">
-              {/* loading component */}
-            </div>
+            {loading && (
+              <div className="lazyselect-select-buttons">Loading ....</div>
+            )}
+            {hasError && (
+              <div className="lazyselect-select-buttons">
+                Somthing went wrong!.
+              </div>
+            )}
           </div>
         </div>
       </div>
