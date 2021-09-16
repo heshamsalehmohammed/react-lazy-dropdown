@@ -1,12 +1,13 @@
 import './TagsInput.css';
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 
-const TagsInput = (props) => {
+const TagsInput = React.memo((props) => {
   const {
     uniqueKey,
     displayBy,
     placeHolder,
-    dataList,
+    selectedDataList,
+    renderedSelectedDataList,
     onSearchChange,
     searchValue,
     handleOptionSelectedUnselected,
@@ -15,15 +16,10 @@ const TagsInput = (props) => {
     displayShowMoreOptionCallBack,
   } = props;
 
-  let renderedDataList =
-    displayShowMoreOption <= 0
-      ? dataList
-      : dataList.slice(0, maximunOptionToShow);
-
   return (
     <div className="tags-input">
       <ul id="tags">
-        {renderedDataList.map((value, index) => (
+        {renderedSelectedDataList.map((value, index) => (
           <li key={index} className="tag">
             <span className="tag-title">{value[displayBy]}</span>
             <span
@@ -33,10 +29,10 @@ const TagsInput = (props) => {
             </span>
           </li>
         ))}
-        {dataList.length > maximunOptionToShow && displayShowMoreOption && (
+        {selectedDataList.length > maximunOptionToShow && displayShowMoreOption && (
           <li
             className="tag"
-            onClick={(e) => displayShowMoreOptionCallBack(dataList)}>
+            onClick={(e) => displayShowMoreOptionCallBack(selectedDataList)}>
             <span className="tag-title">{'Show More'}</span>
           </li>
         )}
@@ -49,6 +45,6 @@ const TagsInput = (props) => {
       />
     </div>
   );
-};
+});
 
 export default TagsInput;

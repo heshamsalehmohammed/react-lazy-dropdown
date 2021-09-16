@@ -11,6 +11,11 @@ stories.add('App', () => {
     alert(selectedOptions.length +" items selected");
   };
 
+  const selectionChangedCallBack = (selectedOptions) => {
+    console.log(selectedOptions.length +" items selected");
+  };
+
+
   return (
     <>
       <div className="m-5" style={{width: '500px'}}>
@@ -20,7 +25,7 @@ stories.add('App', () => {
           }
           UniqueKey={'Id'} // object unique key - must be unique per object
           DisplayBy={'Name'}
-          PlaceHolder={'Select Movies'}
+          PlaceHolder={'Select Methods'}
           useQueryParams={false}
           useBodyParams={true}
           RequestMethod={'post'}
@@ -42,6 +47,9 @@ stories.add('App', () => {
           DisplayShowMoreOption={true}
           MaximunOptionToShow={3}
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
+          SelectionChangedCallBack={selectionChangedCallBack}
+          IsMulti={true}
+          ShowTags={true}
         />
       </div>
     </>

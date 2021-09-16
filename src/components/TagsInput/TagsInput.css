@@ -13,6 +13,12 @@
   padding: 4px 0 0 0;
 }
 
+.tags-input input:disabled {
+  color: inherit;
+  background-color: inherit;
+  cursor: pointer;
+}
+
 .tags-input input:focus {
   outline: transparent;
 }

@@ -2,6 +2,7 @@ import './LazySelect.css';
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import TagsInput from '../TagsInput/TagsInput';
 import {getDataList, parseResponseResultsHierarchy} from '../Common/HTTPHelper';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const LazySelect = React.memo((props) => {
   const {
@@ -22,6 +23,9 @@ const LazySelect = React.memo((props) => {
     DisplayShowMoreOption = true,
     MaximunOptionToShow = -1,
     DisplayShowMoreOptionCallBack = () => {},
+    SelectionChangedCallBack = () => {},
+    IsMulti = true,
+    ShowTags = true,
   } = props;
 
   if (!UniqueKey) {
@@ -42,7 +46,8 @@ const LazySelect = React.memo((props) => {
 
   const [startFrom, setStartFrom] = useState(1);
 
-  const optionsContainerRef = useRef(null);
+  /*   const optionsContainerRef = useRef(null);
+  const lastOptionRef = useRef(null); */
 
   const fetchDataList = async () => {
     setLoading(true);
@@ -55,8 +60,9 @@ const LazySelect = React.memo((props) => {
       requestInfo.headers
     );
     if (response.success) {
+      let newLocalDLLength = 0;
       setLocalDataList((prevState) => {
-        return [
+        const newLocalDL = [
           ...prevState,
           ...appendIsSelectedToFetchedData(
             parseResponseResultsHierarchy(
@@ -65,8 +71,10 @@ const LazySelect = React.memo((props) => {
             )
           ),
         ];
+        newLocalDLLength = newLocalDL.length;
+        return newLocalDL;
       });
-      setStartFrom(localDataList.length);
+      setStartFrom(newLocalDLLength);
     } else {
       setHasError(true);
     }
@@ -78,7 +86,7 @@ const LazySelect = React.memo((props) => {
   }, []);
 
   useEffect(() => {
-    if (search || scrolled) {
+    if (search.trim() !== '' || scrolled) {
       fetchDataList();
       if (scrolled) {
         setScrolled(false);
@@ -120,16 +128,25 @@ const LazySelect = React.memo((props) => {
   };
 
   const handleOptionSelectedUnselected = (checked, objectOfList) => {
-    setSelectedDataList((prevState) => {
-      if (checked) {
-        return [...prevState, objectOfList];
-      }
-      return [
-        ...prevState.filter(
-          (ldl) => ldl[UniqueKey] !== objectOfList[UniqueKey]
-        ),
-      ];
-    });
+    if (IsMulti) {
+      setSelectedDataList((prevState) => {
+        if (checked) {
+          return [...prevState, objectOfList];
+        }
+        return [
+          ...prevState.filter(
+            (ldl) => ldl[UniqueKey] !== objectOfList[UniqueKey]
+          ),
+        ];
+      });
+    } else {
+      setSelectedDataList((prevState) => {
+        if (checked) {
+          return [objectOfList];
+        }
+        return [];
+      });
+    }
   };
 
   const getLiListItems = () => {
@@ -161,7 +178,11 @@ const LazySelect = React.memo((props) => {
   };
 
   const onSearchChange = (e) => {
-    setSearch(e.target.value);
+    setStartFrom(1);
+    setLocalDataList([]);
+    if (e.target.value !== search) {
+      setSearch(e.target.value);
+    }
   };
 
   const toggleShow = () => {
@@ -174,11 +195,75 @@ const LazySelect = React.memo((props) => {
   };
 
   const optionsContainerScrollHandler = () => {
-    const element = optionsContainerRef.current;
-    if (element.scrollHeight - element.scrollTop - element.clientHeight < 3) {
+    /*const optionsContainer = optionsContainerRef.current;
+     if (optionsContainer.scrollHeight - optionsContainer.scrollTop - optionsContainer.clientHeight < 3) {
       setScrolled(true);
       console.log('scrolled');
     }
+
+    const lastOption = lastOptionRef.current;
+
+    const rect = lastOption.getBoundingClientRect();
+    var lastOptionOffsetTop = rect.top + optionsContainer.scrollTop;
+
+    if (
+      lastOptionOffsetTop - optionsContainer.scrollTop <
+      lastOption.clientHeight
+    ) {
+      setScrolled(true);
+      console.log('scrolled');
+    } */
+  };
+
+  useEffect(() => {
+    SelectionChangedCallBack(selectedDataList);
+  }, [selectedDataList]);
+
+  const getSelectOutput = () => {
+    if (IsMulti) {
+      if (ShowTags) {
+        return (
+          <TagsInput
+            uniqueKey={UniqueKey}
+            displayBy={DisplayBy}
+            placeHolder={PlaceHolder}
+            selectedDataList={selectedDataList}
+            renderedSelectedDataList={
+              MaximunOptionToShow <= 0
+                ? selectedDataList
+                : selectedDataList.slice(0, MaximunOptionToShow)
+            }
+            onSearchChange={onSearchChange}
+            searchValue={search}
+            handleOptionSelectedUnselected={handleOptionSelectedUnselected}
+            displayShowMoreOption={DisplayShowMoreOption}
+            maximunOptionToShow={MaximunOptionToShow}
+            displayShowMoreOptionCallBack={DisplayShowMoreOptionCallBack}
+          />
+        );
+      }
+    } else if (selectedDataList[0]) {
+      return (
+        <div className="tags-input">
+          <input
+            type="text"
+            value={search}
+            onChange={onSearchChange}
+            placeholder={selectedDataList[0][DisplayBy]}
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="tags-input">
+        <input
+          type="text"
+          onChange={onSearchChange}
+          value={search}
+          placeholder={PlaceHolder}
+        />
+      </div>
+    );
   };
 
   return (
@@ -192,30 +277,26 @@ const LazySelect = React.memo((props) => {
                 ? 'lazyselect-select-output active'
                 : 'lazyselect-select-output'
             }>
-            <TagsInput
-              uniqueKey={UniqueKey}
-              displayBy={DisplayBy}
-              placeHolder={PlaceHolder}
-              dataList={selectedDataList}
-              onSearchChange={onSearchChange}
-              searchValue={search}
-              handleOptionSelectedUnselected={handleOptionSelectedUnselected}
-              displayShowMoreOption={DisplayShowMoreOption}
-              maximunOptionToShow={MaximunOptionToShow}
-              displayShowMoreOptionCallBack={DisplayShowMoreOptionCallBack}
-            />
-            <div className="icon">
-              <div className="dropdown"></div>
+            {getSelectOutput()}
+            <div
+              className="icon"
+              style={{
+                lineHeight: isShown ? '49px' : '46px',
+              }}>
+              <i className={`arrow ${isShown ? 'up' : 'down'}`} />
             </div>
           </div>
           <div
             className={
               isShown ? 'lazyselect-select-box show' : 'lazyselect-select-box'
-            }
-            ref={optionsContainerRef}
-            onScroll={optionsContainerScrollHandler}>
+            }>
             <div className="lazyselectcheckbox-list-container">
-              {getLiListItems()}
+              <InfiniteScroll
+                dataLength={500}
+                next={fetchDataList}
+                hasMore={true}>
+                {getLiListItems()}
+              </InfiniteScroll>
             </div>
             {loading && (
               <div className="lazyselect-select-buttons">Loading ....</div>
