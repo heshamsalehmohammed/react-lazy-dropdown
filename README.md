@@ -6,10 +6,10 @@
 
 
 # lazy loading multi selection with tags and lazy async filter 
-![Alt Text](src/ReadMe/reactlazydropdownmulti.gif)
+![Screenshot](https://github.com/heshamsalehmohammed/react-lazy-dropdown/blob/master/ReadMe/reactlazydropdownmulti.gif)
 
 # lazy loading single selection and lazy async filter 
-![Alt Text](src/ReadMe/reactlazydropdownsingle.gif)
+![Screenshot](https://github.com/heshamsalehmohammed/react-lazy-dropdown/blob/master/ReadMe/reactlazydropdownsingle.gif)
 
 ## Installation
 
