@@ -4,7 +4,12 @@
  lazy loading option by API calls with async lazy Filtering, Sorting 
  and Tags with custom functions can be provided from the outside 
 
-![Alt Text](src/ReadMe/react-lazy-dropdown.gif)
+
+# lazy loading multi selection with tags and lazy async filter 
+![Alt Text](src/ReadMe/react-lazy-dropdown-multi.gif)
+
+# lazy loading single selection and lazy async filter 
+![Alt Text](src/ReadMe/react-lazy-dropdown-single.gif)
 
 ## Installation
 

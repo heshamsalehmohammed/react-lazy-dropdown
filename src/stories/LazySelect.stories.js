@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import {storiesOf} from '@storybook/react';
 
-import {LazySelect} from '../../dist/index'; 
-//import {LazySelect} from '../components/index';
+//import {LazySelect} from '../../dist/index'; 
+import {LazySelect} from '../components/index';
 
 const stories = storiesOf('App Test', module);
 
@@ -50,7 +50,7 @@ stories.add('App', () => {
           MaximunOptionToShow={3}
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
           SelectionChangedCallBack={selectionChangedCallBack}
-          IsMulti={true}
+          IsMulti={false}
           ShowTags={true}
         />
       </div>
