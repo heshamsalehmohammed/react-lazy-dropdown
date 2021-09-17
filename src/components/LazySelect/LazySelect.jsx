@@ -26,6 +26,8 @@ const LazySelect = React.memo((props) => {
     SelectionChangedCallBack = () => {},
     IsMulti = true,
     ShowTags = true,
+    TagComponent = null,
+    ShowMoreComponent = null,
   } = props;
 
   if (!UniqueKey) {
@@ -304,6 +306,8 @@ const LazySelect = React.memo((props) => {
             maximunOptionToShow={MaximunOptionToShow}
             displayShowMoreOptionCallBack={DisplayShowMoreOptionCallBack}
             tagsInputDisabled={tagsInputDisabled}
+            TagComponent={TagComponent}
+            ShowMoreComponent={ShowMoreComponent}
           />
         );
       }
@@ -371,7 +375,7 @@ const LazySelect = React.memo((props) => {
             )}
             {hasError && (
               <div className="lazyselect-select-buttons">
-                Somthing went wrong!.
+                Somthing went wrong!, Check your server!
               </div>
             )}
           </div>

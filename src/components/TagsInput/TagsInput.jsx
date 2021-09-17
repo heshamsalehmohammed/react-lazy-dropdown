@@ -1,5 +1,7 @@
 import './TagsInput.css';
-import React, {useRef,useEffect} from 'react';
+import React, {useRef, useEffect} from 'react';
+import LazyTag from './LazyTag';
+import LazyShowMore from './LazyShowMore';
 
 const TagsInput = React.memo((props) => {
   const {
@@ -15,6 +17,8 @@ const TagsInput = React.memo((props) => {
     maximunOptionToShow,
     displayShowMoreOptionCallBack,
     tagsInputDisabled,
+    TagComponent,
+    ShowMoreComponent,
   } = props;
 
   const lazyInputRef = useRef(null);
@@ -24,28 +28,66 @@ const TagsInput = React.memo((props) => {
     }
   }, [tagsInputDisabled]);
 
+  const getTagComponent = (
+    index,
+    value,
+    displayBy,
+    handleOptionSelectedUnselected
+  ) => {
+    if (TagComponent != null) {
+      return (
+        <TagComponent
+          key={index}
+          optionValue={value}
+          displayBy={displayBy}
+          handleOptionSelectedUnselected={handleOptionSelectedUnselected}
+        />
+      );
+    }
+    return (
+      <LazyTag
+        key={index}
+        optionValue={value}
+        displayBy={displayBy}
+        handleOptionSelectedUnselected={handleOptionSelectedUnselected}
+      />
+    );
+  };
+
+  const getShowMoreComponent = (
+    selectedDataList,
+    maximunOptionToShow,
+    displayShowMoreOptionCallBack
+  ) => {
+    if (ShowMoreComponent != null) {
+      return <ShowMoreComponent selectedDataList={selectedDataList} />;
+    }
+    return (
+      <LazyShowMore
+        selectedDataList={selectedDataList}
+        maximunOptionToShow={maximunOptionToShow}
+        displayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
+      />
+    );
+  };
+
   return (
     <div className="tags-input">
       <ul id="tags">
-        {renderedSelectedDataList.map((value, index) => (
-          <li key={index} className="tag">
-            <span className="tag-title">{value[displayBy]}</span>
-            <span
-              className="tag-close-icon"
-              onClick={(e) => handleOptionSelectedUnselected(false, value)}>
-              x
-            </span>
-          </li>
-        ))}
+        {renderedSelectedDataList.map((value, index) => {
+          return getTagComponent(
+            index,
+            value,
+            displayBy,
+            handleOptionSelectedUnselected
+          );
+        })}
         {selectedDataList.length > maximunOptionToShow &&
-          displayShowMoreOption && (
-            <li
-              className="tag"
-              onClick={(e) => displayShowMoreOptionCallBack(selectedDataList)}>
-              <span className="tag-title">{`+${
-                selectedDataList.length - maximunOptionToShow
-              } More`}</span>
-            </li>
+          displayShowMoreOption &&
+          getShowMoreComponent(
+            selectedDataList,
+            maximunOptionToShow,
+            displayShowMoreOptionCallBack
           )}
       </ul>
       <input

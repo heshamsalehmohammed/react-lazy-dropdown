@@ -1,22 +1,28 @@
 import React, {useState, useEffect} from 'react';
 import {storiesOf} from '@storybook/react';
 
-//import {LazySelect} from '../../dist/index'; 
+//import {LazySelect} from '../../dist/index';
 import {LazySelect} from '../components/index';
 
 const stories = storiesOf('App Test', module);
 
+const myCustomTagComponent = (props) => {
+  console.log(props);
+  return <div>my custom tag</div>;
+};
+const myCustomShowMoreComponent = (props) => {
+  console.log(props);
+  return <div>my custom show more</div>;
+};
+
 stories.add('App', () => {
-
-
   const displayShowMoreOptionCallBack = (selectedOptions) => {
-    alert(selectedOptions.length +" items selected");
+    alert(selectedOptions.length + ' items selected');
   };
 
   const selectionChangedCallBack = (selectedOptions) => {
-    console.log(selectedOptions.length +" items selected");
+    console.log(selectedOptions.length + ' items selected');
   };
-
 
   return (
     <>
@@ -52,6 +58,8 @@ stories.add('App', () => {
           SelectionChangedCallBack={selectionChangedCallBack}
           IsMulti={true}
           ShowTags={true}
+          TagComponent={myCustomTagComponent}
+          ShowMoreComponent={myCustomShowMoreComponent}
         />
       </div>
     </>
