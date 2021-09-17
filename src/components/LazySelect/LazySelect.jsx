@@ -3,6 +3,7 @@ import React, {useState, useEffect, useRef, useCallback} from 'react';
 import TagsInput from '../TagsInput/TagsInput';
 import {getDataList, parseResponseResultsHierarchy} from '../Common/HTTPHelper';
 import {isElementAtBottom} from '../Common/ScrollHelper';
+import Logger from '../Common/LogHelper';
 
 const LazySelect = React.memo((props) => {
   const {
@@ -16,6 +17,7 @@ const LazySelect = React.memo((props) => {
     ExistingRequestParams = {},
     ExistingRequestHeaders = {},
     PageSize = 10,
+    InitialStartFrom = 1,
     SearchRequestParamName = 'search',
     StartFromRequestParamName = 'from',
     PageSizeRequestParamName = 'size',
@@ -38,8 +40,6 @@ const LazySelect = React.memo((props) => {
     throw new Error('ApiURL for your data must be provided');
   }
 
-  const initialStartFrom = 1;
-
   const [search, setSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -50,12 +50,12 @@ const LazySelect = React.memo((props) => {
   const [localDataList, setLocalDataList] = useState([]);
   const [selectedDataList, setSelectedDataList] = useState([]);
   const [tagsInputDisabled, setTagsInputDisabled] = useState(true);
-  const [startFrom, setStartFrom] = useState(1);
+  const [startFrom, setStartFrom] = useState(InitialStartFrom);
 
   const optionsContainerRef = useRef(null);
   const lazyInputRef = useRef(null);
 
-  const prepareRequestInfo = () => {
+  const prepareRequestInfo = (StartFrom = null) => {
     let baseURL = ApiURL;
     let data = {};
 
@@ -65,14 +65,17 @@ const LazySelect = React.memo((props) => {
         baseURL += `${key}=${ExistingRequestParams[key]}&`;
       }
       baseURL += `${SearchRequestParamName}=${search}&`;
-      baseURL += `${StartFromRequestParamName}=${startFrom}&`;
+      baseURL += `${StartFromRequestParamName}=${
+        StartFrom != null ? StartFrom : startFrom
+      }&`;
       baseURL += `${PageSizeRequestParamName}=${PageSize}`;
     } else if (useBodyParams) {
       data = {
         ...ExistingRequestParams,
       };
       data[SearchRequestParamName] = search;
-      data[StartFromRequestParamName] = startFrom;
+      data[StartFromRequestParamName] =
+        StartFrom != null ? StartFrom : startFrom;
       data[PageSizeRequestParamName] = PageSize;
     }
 
@@ -84,24 +87,25 @@ const LazySelect = React.memo((props) => {
     };
   };
 
-  const prevRequestInfo = useRef(prepareRequestInfo());
+  const prevRequestInfo = useRef(prepareRequestInfo(null));
 
-  const fetchDataList = async () => {
+  const fetchDataList = async (StartFrom = null) => {
     setLoading(true);
     setHasError(false);
-    const requestInfo = prepareRequestInfo();
-    console.log(
-      'Request Info ',
-      requestInfo,
-      ' previous request info ',
-      prevRequestInfo.current
+    const requestInfo = prepareRequestInfo(StartFrom);
+    Logger.LogMessage(
+      'Request Info FROM',
+      requestInfo.data[StartFromRequestParamName]
+    );
+    Logger.LogMessage(
+      'previous request info FROM',
+      prevRequestInfo.current.data[StartFromRequestParamName]
     );
     if (
-      requestInfo.data[StartFromRequestParamName] === initialStartFrom ||
+      requestInfo.data[StartFromRequestParamName] === InitialStartFrom ||
       requestInfo.data[StartFromRequestParamName] !==
         prevRequestInfo.current.data[StartFromRequestParamName]
     ) {
-      console.log('Request Info ', requestInfo);
       let response = await getDataList(
         requestInfo.method,
         requestInfo.baseURL,
@@ -109,27 +113,38 @@ const LazySelect = React.memo((props) => {
         requestInfo.headers
       );
       if (response.success) {
-        let newLocalDLLength = initialStartFrom;
-        let oldLocalDLLength = initialStartFrom;
+        let newLocalDLLength = InitialStartFrom;
         setLocalDataList((prevState) => {
-          oldLocalDLLength =
-            prevState.length === 0 ? initialStartFrom : prevState.length;
-          const newLocalDL = [
-            ...prevState,
-            ...parseResponseResultsHierarchy(
-              ResponseResultsHierarchy,
-              response.data
-            ),
-          ];
+          let parsedResponseResultsHierarchy = parseResponseResultsHierarchy(
+            ResponseResultsHierarchy,
+            response.data
+          );
+          const prevStateUniqueIdList = prevState.map((ps) => ps[UniqueKey]);
+          const duplicatedDataList =
+            parsedResponseResultsHierarchy?.filter((newDL) =>
+              prevStateUniqueIdList.includes(newDL[UniqueKey])
+            ) ?? [];
+          if (duplicatedDataList.length > 0) {
+            Logger.LogWarning(
+              'there is some duplication in the data, we will remove the duplicated options for you, but you need to fix this issue, the duplicated data are:'
+            );
+            Logger.LogWarning(duplicatedDataList);
+            parsedResponseResultsHierarchy =
+              parsedResponseResultsHierarchy?.filter(
+                (newDL) => !prevStateUniqueIdList.includes(newDL[UniqueKey])
+              ) ?? [];
+          }
+          const newLocalDL = [...prevState, ...parsedResponseResultsHierarchy];
           newLocalDLLength =
-            newLocalDL.length === 0 ? initialStartFrom : newLocalDL.length;
+            newLocalDL.length === 0 ? InitialStartFrom : newLocalDL.length;
           return newLocalDL;
         });
-        if (searched) {
-          setStartFrom(oldLocalDLLength);
-        } else {
-          setStartFrom(newLocalDLLength);
-        }
+
+        setStartFrom(newLocalDLLength + InitialStartFrom);
+        Logger.LogMessage(
+          'new start from',
+          newLocalDLLength + InitialStartFrom
+        );
       } else {
         setHasError(true);
       }
@@ -149,15 +164,15 @@ const LazySelect = React.memo((props) => {
 
   useEffect(() => {
     if (shown) {
-      setStartFrom(initialStartFrom);
+      setStartFrom(InitialStartFrom);
       setLocalDataList([]);
-      fetchDataList();
+      fetchDataList(InitialStartFrom);
     }
   }, [shown]);
 
   useEffect(() => {
     if (scrolled) {
-      console.log('useEffect for scroll');
+      Logger.LogMessage('useEffect for scroll');
       fetchDataList();
     }
   }, [scrolled]);
@@ -179,36 +194,38 @@ const LazySelect = React.memo((props) => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searched) {
-        setStartFrom(initialStartFrom);
+        setStartFrom(InitialStartFrom);
         setLocalDataList([]);
-        console.log('useEffect for search');
-        fetchDataList();
+        Logger.LogMessage('useEffect for search');
+        fetchDataList(InitialStartFrom);
       }
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
-  const handleOptionSelectedUnselected = (checked, objectOfList) => {
-    if (IsMulti) {
-      setSelectedDataList((prevState) => {
-        if (checked) {
-          return [...prevState, objectOfList];
-        }
-        return [
-          ...prevState.filter(
-            (ldl) => ldl[UniqueKey] !== objectOfList[UniqueKey]
-          ),
-        ];
-      });
-    } else {
-      setSelectedDataList((prevState) => {
-        if (checked) {
-          return [objectOfList];
-        }
-        return [];
-      });
+  const handleOptionSelectedUnselected = useCallback(
+    (checked, objectOfList) => {
+      if (IsMulti) {
+        setSelectedDataList((prevState) => {
+          if (checked) {
+            return [...prevState, objectOfList];
+          }
+          return [
+            ...prevState.filter(
+              (ldl) => ldl[UniqueKey] !== objectOfList[UniqueKey]
+            ),
+          ];
+        });
+      } else {
+        setSelectedDataList((prevState) => {
+          if (checked) {
+            return [objectOfList];
+          }
+          return [];
+        });
+      }
     }
-  };
+  );
 
   const getLiListItems = () => {
     return localDataList.map((value, index) => {
@@ -246,7 +263,7 @@ const LazySelect = React.memo((props) => {
   };
 
   const toggleShow = (e) => {
-    // console.log(e.target)
+    // Logger.LogMessage(e.target)
     if (
       e.target.classList.contains('icon') ||
       e.target.classList.contains('lazyselect-select-output') ||
@@ -255,7 +272,7 @@ const LazySelect = React.memo((props) => {
       if (isShown) {
         setIsShown(false);
         setSearch('');
-        setStartFrom(initialStartFrom);
+        setStartFrom(InitialStartFrom);
         setLocalDataList([]);
         setTagsInputDisabled(true);
       } else {
@@ -272,10 +289,15 @@ const LazySelect = React.memo((props) => {
     const optionsContainer = optionsContainerRef.current;
 
     const atBottom = isElementAtBottom(optionsContainer, 0.98);
-    console.log('at bottom', atBottom, 'prev at bottom ', prevAtBottom.current);
+    /*     Logger.LogMessage(
+      'at bottom',
+      atBottom,
+      'prev at bottom ',
+      prevAtBottom.current
+    ); */
 
     if (atBottom && atBottom !== prevAtBottom.current) {
-      console.log('set scrolled', atBottom);
+      /* Logger.LogMessage('set scrolled', atBottom); */
       setScrolled(true);
     }
     prevAtBottom.current = atBottom;

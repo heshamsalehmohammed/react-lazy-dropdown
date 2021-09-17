@@ -39,7 +39,6 @@ const TagsInput = React.memo((props) => {
         <TagComponent
           key={index}
           optionValue={value}
-          displayBy={displayBy}
           handleOptionSelectedUnselected={handleOptionSelectedUnselected}
         />
       );

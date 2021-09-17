@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LazyShowMore = (props) => {
+const LazyShowMore = React.memo((props) => {
   const {
     selectedDataList,
     maximunOptionToShow,
@@ -15,6 +15,6 @@ const LazyShowMore = (props) => {
       } More`}</span>
     </li>
   );
-};
+});
 
 export default LazyShowMore;
