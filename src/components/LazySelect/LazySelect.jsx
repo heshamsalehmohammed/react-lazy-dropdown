@@ -47,10 +47,11 @@ const LazySelect = React.memo((props) => {
   const [shown, setShown] = useState(false);
   const [localDataList, setLocalDataList] = useState([]);
   const [selectedDataList, setSelectedDataList] = useState([]);
-  const [tagsInputDisabled, setTagsInputDisabled] = useState(true)
+  const [tagsInputDisabled, setTagsInputDisabled] = useState(true);
   const [startFrom, setStartFrom] = useState(1);
 
   const optionsContainerRef = useRef(null);
+  const lazyInputRef = useRef(null);
 
   const prepareRequestInfo = () => {
     let baseURL = ApiURL;
@@ -106,10 +107,11 @@ const LazySelect = React.memo((props) => {
         requestInfo.headers
       );
       if (response.success) {
-        let newLocalDLLength = 0;
-        let oldLocalDLLength = 0;
+        let newLocalDLLength = initialStartFrom;
+        let oldLocalDLLength = initialStartFrom;
         setLocalDataList((prevState) => {
-          oldLocalDLLength = prevState.length;
+          oldLocalDLLength =
+            prevState.length === 0 ? initialStartFrom : prevState.length;
           const newLocalDL = [
             ...prevState,
             ...parseResponseResultsHierarchy(
@@ -117,7 +119,8 @@ const LazySelect = React.memo((props) => {
               response.data
             ),
           ];
-          newLocalDLLength = newLocalDL.length;
+          newLocalDLLength =
+            newLocalDL.length === 0 ? initialStartFrom : newLocalDL.length;
           return newLocalDL;
         });
         if (searched) {
@@ -156,6 +159,20 @@ const LazySelect = React.memo((props) => {
       fetchDataList();
     }
   }, [scrolled]);
+
+  useEffect(() => {
+    if (loading) {
+      setTagsInputDisabled(true);
+    } else if (isShown) {
+      setTagsInputDisabled(false);
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    if (!tagsInputDisabled) {
+      lazyInputRef?.current?.focus();
+    }
+  }, [tagsInputDisabled]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -294,6 +311,8 @@ const LazySelect = React.memo((props) => {
       return (
         <div className="tags-input">
           <input
+            ref={lazyInputRef}
+            autoFocus
             disabled={tagsInputDisabled}
             type="text"
             value={search}
@@ -306,6 +325,8 @@ const LazySelect = React.memo((props) => {
     return (
       <div className="tags-input">
         <input
+          ref={lazyInputRef}
+          autoFocus
           disabled={tagsInputDisabled}
           type="text"
           onChange={onSearchChange}

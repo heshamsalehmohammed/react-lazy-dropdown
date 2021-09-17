@@ -1,5 +1,5 @@
 import './TagsInput.css';
-import React from 'react';
+import React, {useRef,useEffect} from 'react';
 
 const TagsInput = React.memo((props) => {
   const {
@@ -16,6 +16,13 @@ const TagsInput = React.memo((props) => {
     displayShowMoreOptionCallBack,
     tagsInputDisabled,
   } = props;
+
+  const lazyInputRef = useRef(null);
+  useEffect(() => {
+    if (!tagsInputDisabled) {
+      lazyInputRef.current.focus();
+    }
+  }, [tagsInputDisabled]);
 
   return (
     <div className="tags-input">
@@ -42,6 +49,8 @@ const TagsInput = React.memo((props) => {
           )}
       </ul>
       <input
+        ref={lazyInputRef}
+        autoFocus
         disabled={tagsInputDisabled}
         type="text"
         value={searchValue}
