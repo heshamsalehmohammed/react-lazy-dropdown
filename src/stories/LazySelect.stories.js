@@ -50,7 +50,7 @@ stories.add('App', () => {
           MaximunOptionToShow={3}
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
           SelectionChangedCallBack={selectionChangedCallBack}
-          IsMulti={false}
+          IsMulti={true}
           ShowTags={true}
         />
       </div>

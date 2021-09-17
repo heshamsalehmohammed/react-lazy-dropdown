@@ -1,5 +1,5 @@
 import './TagsInput.css';
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 
 const TagsInput = React.memo((props) => {
   const {

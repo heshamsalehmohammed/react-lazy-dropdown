@@ -143,21 +143,15 @@ const LazySelect = React.memo((props) => {
     }
   }, [scrolled]);
 
-  /*   useEffect(() => {
-    if (searched) {
-      console.log('useEffect for search');
-      fetchDataList();
-    }
-  }, [search]); */
-
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searched) {
+        setStartFrom(1);
         setLocalDataList([]);
         console.log('useEffect for search');
         fetchDataList();
       }
-    }, 700);
+    }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
@@ -212,10 +206,12 @@ const LazySelect = React.memo((props) => {
   };
 
   const onSearchChange = (e) => {
-    setStartFrom(1);
     if (e.target.value !== search) {
       setSearch(e.target.value);
       setSearched(true);
+    }
+    if (!isShown) {
+      setIsShown(true);
     }
   };
 
@@ -235,7 +231,7 @@ const LazySelect = React.memo((props) => {
   const optionsContainerScrollHandler = () => {
     const optionsContainer = optionsContainerRef.current;
 
-    const atBottom = isElementAtBottom(optionsContainer, 1);
+    const atBottom = isElementAtBottom(optionsContainer, 0.98);
     console.log('at bottom', atBottom, 'prev at bottom ', prevAtBottom.current);
 
     if (atBottom && atBottom !== prevAtBottom.current) {
