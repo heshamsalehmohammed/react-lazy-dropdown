@@ -3,6 +3,7 @@
   align-items: flex-start;
   flex-wrap: wrap;
   width: 100%;
+  cursor: auto;
 }
 
 .tags-input input {
@@ -16,7 +17,6 @@
 .tags-input input:disabled {
   color: inherit;
   background-color: inherit;
-  cursor: pointer;
 }
 
 .tags-input input:focus {
@@ -28,6 +28,7 @@
   flex-wrap: wrap;
   padding: 0;
   margin: 8px 0 0 0;
+  cursor: auto;
 }
 
 .tag {
@@ -43,6 +44,7 @@
   border-radius: 6px;
   margin: 0 8px 8px 0;
   background: #0052cc;
+  cursor: auto;
 }
 
 .tag .tag-title {

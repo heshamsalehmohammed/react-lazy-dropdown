@@ -47,7 +47,7 @@ const LazySelect = React.memo((props) => {
   const [shown, setShown] = useState(false);
   const [localDataList, setLocalDataList] = useState([]);
   const [selectedDataList, setSelectedDataList] = useState([]);
-
+  const [tagsInputDisabled, setTagsInputDisabled] = useState(true)
   const [startFrom, setStartFrom] = useState(1);
 
   const optionsContainerRef = useRef(null);
@@ -122,7 +122,7 @@ const LazySelect = React.memo((props) => {
         });
         if (searched) {
           setStartFrom(oldLocalDLLength);
-        }else{
+        } else {
           setStartFrom(newLocalDLLength);
         }
       } else {
@@ -224,9 +224,6 @@ const LazySelect = React.memo((props) => {
       setSearch(e.target.value);
       setSearched(true);
     }
-    if (!isShown) {
-      setIsShown(true);
-    }
   };
 
   const toggleShow = (e) => {
@@ -241,9 +238,11 @@ const LazySelect = React.memo((props) => {
         setSearch('');
         setStartFrom(initialStartFrom);
         setLocalDataList([]);
+        setTagsInputDisabled(true);
       } else {
         setIsShown(true);
         setShown(true);
+        setTagsInputDisabled(false);
       }
     }
   };
@@ -287,6 +286,7 @@ const LazySelect = React.memo((props) => {
             displayShowMoreOption={DisplayShowMoreOption}
             maximunOptionToShow={MaximunOptionToShow}
             displayShowMoreOptionCallBack={DisplayShowMoreOptionCallBack}
+            tagsInputDisabled={tagsInputDisabled}
           />
         );
       }
@@ -294,6 +294,7 @@ const LazySelect = React.memo((props) => {
       return (
         <div className="tags-input">
           <input
+            disabled={tagsInputDisabled}
             type="text"
             value={search}
             onChange={onSearchChange}
@@ -305,6 +306,7 @@ const LazySelect = React.memo((props) => {
     return (
       <div className="tags-input">
         <input
+          disabled={tagsInputDisabled}
           type="text"
           onChange={onSearchChange}
           value={search}

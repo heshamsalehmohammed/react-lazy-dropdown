@@ -14,6 +14,7 @@ const TagsInput = React.memo((props) => {
     displayShowMoreOption,
     maximunOptionToShow,
     displayShowMoreOptionCallBack,
+    tagsInputDisabled,
   } = props;
 
   return (
@@ -41,6 +42,7 @@ const TagsInput = React.memo((props) => {
           )}
       </ul>
       <input
+        disabled={tagsInputDisabled}
         type="text"
         value={searchValue}
         onChange={onSearchChange}
