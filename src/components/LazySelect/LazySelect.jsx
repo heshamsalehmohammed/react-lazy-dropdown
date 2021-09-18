@@ -16,6 +16,8 @@ const LazySelect = React.memo((props) => {
     RequestMethod = 'post',
     ExistingRequestParams = {},
     ExistingRequestHeaders = {},
+    usePathParams = false,
+    PathParameterArrangement = [],
     PageSize = 10,
     InitialStartFrom = 1,
     SearchRequestParamName = 'search',
@@ -70,6 +72,29 @@ const LazySelect = React.memo((props) => {
         StartFrom != null ? StartFrom : startFrom
       }&`;
       baseURL += `${PageSizeRequestParamName}=${PageSize}`;
+    } else if (usePathParams) {
+      const flattenParametersObject = {
+        ...Object.assign(
+          {},
+          ...(function _flatten(o) {
+            return [].concat(
+              ...Object.keys(o).map((k) =>
+                typeof o[k] === 'object' ? _flatten(o[k]) : {[k]: o[k]}
+              )
+            );
+          })(ExistingRequestParams)
+        ),
+        [SearchRequestParamName]: search,
+        [StartFromRequestParamName]: StartFrom != null ? StartFrom : startFrom,
+        [PageSizeRequestParamName]: PageSize,
+      };
+      Logger.LogMessage('flatten object', flattenParametersObject);
+      PathParameterArrangement.forEach((paramKey) => {
+        if (flattenParametersObject.hasOwnProperty(paramKey)) {
+          baseURL += `/${flattenParametersObject[paramKey]}`;
+        }
+      });
+      Logger.LogMessage('base url ', baseURL);
     } else if (useBodyParams) {
       data = {
         ...ExistingRequestParams,
