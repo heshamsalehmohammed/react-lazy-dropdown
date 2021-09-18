@@ -7,6 +7,7 @@ const TagsInput = React.memo((props) => {
   const {
     uniqueKey,
     displayBy,
+    Filterable,
     placeHolder,
     selectedDataList,
     renderedSelectedDataList,
@@ -24,7 +25,7 @@ const TagsInput = React.memo((props) => {
   const lazyInputRef = useRef(null);
   useEffect(() => {
     if (!tagsInputDisabled) {
-      lazyInputRef.current.focus();
+      lazyInputRef.current?.focus();
     }
   }, [tagsInputDisabled]);
 
@@ -89,15 +90,17 @@ const TagsInput = React.memo((props) => {
             displayShowMoreOptionCallBack
           )}
       </ul>
-      <input
-        ref={lazyInputRef}
-        autoFocus
-        disabled={tagsInputDisabled}
-        type="text"
-        value={searchValue}
-        onChange={onSearchChange}
-        placeholder={placeHolder}
-      />
+      {Filterable && (
+        <input
+          ref={lazyInputRef}
+          autoFocus
+          disabled={tagsInputDisabled}
+          type="text"
+          value={searchValue}
+          onChange={onSearchChange}
+          placeholder={placeHolder}
+        />
+      )}
     </div>
   );
 });

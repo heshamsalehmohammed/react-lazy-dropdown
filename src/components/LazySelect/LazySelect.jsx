@@ -10,6 +10,7 @@ const LazySelect = React.memo((props) => {
     ApiURL,
     UniqueKey,
     DisplayBy,
+    Filterable = true,
     PlaceHolder = 'Select Items ...',
     useQueryParams = false,
     useBodyParams = false,
@@ -347,6 +348,7 @@ const LazySelect = React.memo((props) => {
           <TagsInput
             uniqueKey={UniqueKey}
             displayBy={DisplayBy}
+            Filterable={Filterable}
             placeHolder={PlaceHolder}
             selectedDataList={selectedDataList}
             renderedSelectedDataList={
@@ -372,7 +374,7 @@ const LazySelect = React.memo((props) => {
           <input
             ref={lazyInputRef}
             autoFocus
-            disabled={tagsInputDisabled}
+            disabled={tagsInputDisabled || !Filterable}
             type="text"
             value={search}
             onChange={onSearchChange}
@@ -386,7 +388,7 @@ const LazySelect = React.memo((props) => {
         <input
           ref={lazyInputRef}
           autoFocus
-          disabled={tagsInputDisabled}
+          disabled={tagsInputDisabled || !Filterable}
           type="text"
           onChange={onSearchChange}
           value={search}

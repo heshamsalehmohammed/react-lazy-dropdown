@@ -40,6 +40,7 @@ stories.add('App', () => {
           } // base URL without forslash at the end
           UniqueKey={'Id'} // object unique key - must be unique per object
           DisplayBy={'Name'}
+          Filterable={true}
           PlaceHolder={'Select Methods'}
           useQueryParams={false}
           usePathParams={false}
