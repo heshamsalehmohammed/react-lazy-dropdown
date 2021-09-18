@@ -60,6 +60,7 @@ stories.add('App', () => {
           StartFromRequestParamName={'From'}
           PageSizeRequestParamName={'Size'}
           ResponseResultsHierarchy={'data/Value/Results'}
+          DisplayCheckBoxForOptions={true}
           DisplayShowMoreOption={true}
           MaximunOptionToShow={3}
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}

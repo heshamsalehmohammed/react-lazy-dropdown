@@ -22,6 +22,7 @@ const LazySelect = React.memo((props) => {
     StartFromRequestParamName = 'from',
     PageSizeRequestParamName = 'size',
     ResponseResultsHierarchy = '',
+    DisplayCheckBoxForOptions = true,
     DisplayShowMoreOption = true,
     MaximunOptionToShow = -1,
     DisplayShowMoreOptionCallBack = () => {},
@@ -242,14 +243,21 @@ const LazySelect = React.memo((props) => {
             (optionSelected ? ' lazyselectcheckbox-active' : '')
           }>
           <input
+            id={`lazyselectcheckbox-${index}`}
             type="checkbox"
-            className="lazyselectcheckbox"
+            className={`lazyselectcheckbox ${
+              DisplayCheckBoxForOptions ? '' : 'checkbox-hidden'
+            }`}
             onChange={(e) =>
               handleOptionSelectedUnselected(e.target.checked, value)
             }
             checked={optionSelected}
           />
-          <label className="lazyselectcheckbox-label">{value[DisplayBy]}</label>
+          <label
+            htmlFor={`lazyselectcheckbox-${index}`}
+            className="lazyselectcheckbox-label">
+            {value[DisplayBy]}
+          </label>
         </div>
       );
     });
