@@ -4,6 +4,7 @@ import TagsInput from '../TagsInput/TagsInput';
 import {getDataList, parseResponseResultsHierarchy} from '../Common/HTTPHelper';
 import {isElementAtBottom} from '../Common/ScrollHelper';
 import Logger from '../Common/LogHelper';
+import {flattenObject} from '../Common/CommonHelper';
 
 const LazySelect = React.memo((props) => {
   const {
@@ -75,16 +76,7 @@ const LazySelect = React.memo((props) => {
       baseURL += `${PageSizeRequestParamName}=${PageSize}`;
     } else if (usePathParams) {
       const flattenParametersObject = {
-        ...Object.assign(
-          {},
-          ...(function _flatten(o) {
-            return [].concat(
-              ...Object.keys(o).map((k) =>
-                typeof o[k] === 'object' ? _flatten(o[k]) : {[k]: o[k]}
-              )
-            );
-          })(ExistingRequestParams)
-        ),
+        ...flattenObject(ExistingRequestParams),
         [SearchRequestParamName]: search,
         [StartFromRequestParamName]: StartFrom != null ? StartFrom : startFrom,
         [PageSizeRequestParamName]: PageSize,

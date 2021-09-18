@@ -43,7 +43,6 @@ stories.add('App', () => {
           Filterable={true}
           PlaceHolder={'Select Methods'}
           useQueryParams={false}
-          usePathParams={false}
           useBodyParams={true}
           RequestMethod={'post'}
           ExistingRequestParams={{
