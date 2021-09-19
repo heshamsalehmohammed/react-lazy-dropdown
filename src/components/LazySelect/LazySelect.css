@@ -188,12 +188,13 @@
 
 .lazyselect-select-buttons {
   position: sticky;
-  bottom: -1px;
+  bottom: 4px;
   display: flex;
   width: 100%;
   justify-content: center;
   background-color: #fff;
   align-self: center;
+  text-align: center;
 }
 
 .lazyselect-select-buttons button {

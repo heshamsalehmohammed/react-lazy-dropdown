@@ -13,6 +13,7 @@ const LazySelect = React.memo((props) => {
     DisplayBy,
     Filterable = true,
     PlaceHolder = 'Select Items ...',
+    AxiosInstance = null,
     useQueryParams = false,
     useBodyParams = false,
     RequestMethod = 'post',
@@ -126,6 +127,7 @@ const LazySelect = React.memo((props) => {
         prevRequestInfo.current.data[StartFromRequestParamName]
     ) {
       let response = await getDataList(
+        AxiosInstance,
         requestInfo.method,
         requestInfo.baseURL,
         requestInfo.data,

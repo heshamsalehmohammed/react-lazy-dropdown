@@ -33,7 +33,7 @@ stories.add('App', () => {
 
   return (
     <>
-      <div className="m-5" style={{width: '500px'}}>
+      <div className="m-5" style={{width: '300px'}}>
         <LazySelect
           ApiURL={
             'https://tps.syngentaaws.org:445/api/MethodVersion/GetMethodVersionList'
@@ -42,6 +42,7 @@ stories.add('App', () => {
           DisplayBy={'Name'}
           Filterable={true}
           PlaceHolder={'Select Methods'}
+          AxiosInstance={null}
           useQueryParams={false}
           useBodyParams={true}
           RequestMethod={'post'}
