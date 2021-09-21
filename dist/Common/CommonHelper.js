@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.flattenObject=void 0;const flattenObject=a=>{var b={};for(var c in a)if(a.hasOwnProperty(c))if("object"==typeof a[c]&&null!==a[c]){var d=flattenObject(a[c]);for(var e in d)d.hasOwnProperty(e)&&(b[c+"."+e]=d[e])}else b[c]=a[c];return b};exports.flattenObject=flattenObject;

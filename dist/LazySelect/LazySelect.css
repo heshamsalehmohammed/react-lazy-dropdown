@@ -36,7 +36,6 @@
   font-size: 29px;
 } */
 
-
 .lazyselect-select-box {
   width: calc(100% - 1.6em);
   position: absolute;
@@ -124,17 +123,26 @@
 }
 
 .lazyselectcheckbox-active {
-  background-color: rgba(30, 167, 253, 6%);
+  background-color: rgba(30, 167, 253, 19%);
   border: #ffffff 1px solid;
   border-radius: 0.2em;
+}
+.lazyselectcheckbox-active:hover {
+  background-color: rgb(0, 102, 165, 16%) !important;
+}
+
+.lazyselectcheckbox-container:hover {
+  background-color: rgba(64, 87, 101, 14%);
 }
 
 .lazyselectcheckbox-label {
   padding: 0.25em;
   margin: 0;
-  width: 80%;
   align-content: center;
   bottom: 13%;
+  cursor: pointer;
+  width: 90%;
+  word-wrap: break-word;
 }
 
 .lazyselect-selectall-container {
@@ -157,6 +165,11 @@
 .lazyselectcheckbox {
   transform: scale3d(1.5, 1.5, 1.5);
   margin: 0.5em;
+  cursor: pointer;
+}
+
+.checkbox-hidden {
+  display: none;
 }
 
 .lazyselect-search-input-container {
@@ -176,12 +189,13 @@
 
 .lazyselect-select-buttons {
   position: sticky;
-  bottom: -1px;
+  bottom: 4px;
   display: flex;
   width: 100%;
   justify-content: center;
   background-color: #fff;
   align-self: center;
+  text-align: center;
 }
 
 .lazyselect-select-buttons button {
@@ -237,8 +251,6 @@
   cursor: pointer;
   padding: 0.1em;
 }
-
-
 
 .arrow {
   border: solid black;
