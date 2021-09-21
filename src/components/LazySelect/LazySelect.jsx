@@ -5,6 +5,7 @@ import {getDataList, parseResponseResultsHierarchy} from '../Common/HTTPHelper';
 import {isElementAtBottom} from '../Common/ScrollHelper';
 import Logger from '../Common/LogHelper';
 import {flattenObject} from '../Common/CommonHelper';
+import LazyOption from './LazyOption';
 
 const LazySelect = React.memo((props) => {
   const {
@@ -36,6 +37,9 @@ const LazySelect = React.memo((props) => {
     ShowTags = true,
     TagComponent = null,
     ShowMoreComponent = null,
+    Virtualized = false,
+    numVisibleItems = 10,
+    itemheight = 36.4
   } = props;
 
   if (!UniqueKey) {
@@ -57,6 +61,11 @@ const LazySelect = React.memo((props) => {
   const [selectedDataList, setSelectedDataList] = useState([]);
   const [tagsInputDisabled, setTagsInputDisabled] = useState(true);
   const [startFrom, setStartFrom] = useState(InitialStartFrom);
+
+  const [virtualScrollState, setVirtualScrollState] = useState({
+    start: 0,
+    end: numVisibleItems,
+  });
 
   const optionsContainerRef = useRef(null);
   const lazyInputRef = useRef(null);
@@ -248,37 +257,40 @@ const LazySelect = React.memo((props) => {
     }
   );
 
+  const isOptionSelected = (value, selectedDataList) => {
+    let optionInSelectedList = selectedDataList.find(
+      (ldl) => ldl[UniqueKey] === value[UniqueKey]
+    );
+    return optionInSelectedList ? true : false;
+  };
+
   const getLiListItems = () => {
     return localDataList.map((value, index) => {
-      let optionInSelectedList = selectedDataList.find(
-        (ldl) => ldl[UniqueKey] === value[UniqueKey]
-      );
-      let optionSelected = optionInSelectedList ? true : false;
-
+      if (Virtualized) {
+        if (
+          !(
+            index >= virtualScrollState.start && index <= virtualScrollState.end
+          )
+        ) {
+          return null;
+        }
+      }
+      let optionSelected = isOptionSelected(value, selectedDataList);
       return (
-        <div
+        <LazyOption
           key={index}
-          className={
-            'lazyselectcheckbox-container' +
-            (optionSelected ? ' lazyselectcheckbox-active' : '')
-          }>
-          <input
-            id={`lazyselectcheckbox-${index}`}
-            type="checkbox"
-            className={`lazyselectcheckbox ${
-              DisplayCheckBoxForOptions ? '' : 'checkbox-hidden'
-            }`}
-            onChange={(e) =>
-              handleOptionSelectedUnselected(e.target.checked, value)
-            }
-            checked={optionSelected}
-          />
-          <label
-            htmlFor={`lazyselectcheckbox-${index}`}
-            className="lazyselectcheckbox-label">
-            {value[DisplayBy]}
-          </label>
-        </div>
+          index={index}
+          optionSelected={optionSelected}
+          DisplayCheckBoxForOptions={DisplayCheckBoxForOptions}
+          handleOptionSelectedUnselected={handleOptionSelectedUnselected}
+          value={value}
+          DisplayBy={DisplayBy}
+          itemheight={itemheight}
+          Virtualized={Virtualized}
+          FirstVirtualOption={
+            Virtualized ? index === virtualScrollState.start : false
+          }
+        />
       );
     });
   };
@@ -311,21 +323,32 @@ const LazySelect = React.memo((props) => {
     }
   };
 
+  const scollPos = (optionsContainer) => {
+    let currentIndx = Math.trunc(optionsContainer.scrollTop / itemheight);
+    currentIndx =
+      currentIndx - numVisibleItems >= localDataList.length
+        ? currentIndx - numVisibleItems
+        : currentIndx;
+    if (currentIndx !== virtualScrollState.start) {
+      setVirtualScrollState({
+        start: currentIndx,
+        end:
+          currentIndx + numVisibleItems >= localDataList.length
+            ? localDataList.length - 1
+            : currentIndx + numVisibleItems,
+      });
+    }
+  };
+
   const prevAtBottom = useRef(false);
 
   const optionsContainerScrollHandler = () => {
     const optionsContainer = optionsContainerRef.current;
-
+    if (Virtualized) {
+      scollPos(optionsContainer);
+    }
     const atBottom = isElementAtBottom(optionsContainer, 0.98);
-    /*     Logger.LogMessage(
-      'at bottom',
-      atBottom,
-      'prev at bottom ',
-      prevAtBottom.current
-    ); */
-
     if (atBottom && atBottom !== prevAtBottom.current) {
-      /* Logger.LogMessage('set scrolled', atBottom); */
       setScrolled(true);
     }
     prevAtBottom.current = atBottom;
@@ -392,6 +415,14 @@ const LazySelect = React.memo((props) => {
     );
   };
 
+  Logger.LogMessage('local data length', localDataList.length);
+  const containerStyle = Virtualized
+    ? {
+        height: localDataList.length * itemheight,
+        minHeight: localDataList.length * itemheight,
+      }
+    : {};
+
   return (
     <div className="lazyselect">
       <div className="lazyselect-select-wrapper">
@@ -418,7 +449,9 @@ const LazySelect = React.memo((props) => {
               isShown ? 'lazyselect-select-box show' : 'lazyselect-select-box'
             }
             onScroll={optionsContainerScrollHandler}>
-            <div className="lazyselectcheckbox-list-container">
+            <div
+              className="lazyselectcheckbox-list-container"
+              style={containerStyle}>
               {getLiListItems()}
             </div>
             {loading && (

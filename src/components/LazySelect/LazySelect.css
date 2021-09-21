@@ -138,10 +138,11 @@
 .lazyselectcheckbox-label {
   padding: 0.25em;
   margin: 0;
-  width: 100%;
   align-content: center;
   bottom: 13%;
   cursor: pointer;
+  width: 90%;
+  word-wrap: break-word;
 }
 
 .lazyselect-selectall-container {
