@@ -33,13 +33,14 @@ const LazySelect = React.memo((props) => {
     MaximunOptionToShow = -1,
     DisplayShowMoreOptionCallBack = () => {},
     SelectionChangedCallBack = () => {},
+    SelectedDataList = [],
     IsMulti = true,
     ShowTags = true,
     TagComponent = null,
     ShowMoreComponent = null,
     Virtualized = false,
     numVisibleItems = 10,
-    itemheight = 36.4
+    itemheight = 36.4,
   } = props;
 
   if (!UniqueKey) {
@@ -58,7 +59,7 @@ const LazySelect = React.memo((props) => {
   const [isShown, setIsShown] = useState(false);
   const [shown, setShown] = useState(false);
   const [localDataList, setLocalDataList] = useState([]);
-  const [selectedDataList, setSelectedDataList] = useState([]);
+  const [selectedDataList, setSelectedDataList] = useState(SelectedDataList);
   const [tagsInputDisabled, setTagsInputDisabled] = useState(true);
   const [startFrom, setStartFrom] = useState(InitialStartFrom);
 
