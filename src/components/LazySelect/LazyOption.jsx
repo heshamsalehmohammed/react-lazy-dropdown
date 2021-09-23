@@ -4,7 +4,11 @@ import Logger from '../Common/LogHelper';
 const LazyOption = React.memo((props) => {
   const {
     index,
+    id,
+    oRef,
+    setCursor,
     optionSelected,
+    optionActive,
     DisplayCheckBoxForOptions,
     handleOptionSelectedUnselected,
     value,
@@ -21,13 +25,21 @@ const LazyOption = React.memo((props) => {
         }
       : {};
 
+  const mouseEnterHandler = () => {
+    setCursor(index);
+  };
+
   return (
     <div
+      ref={oRef}
       className={
         'lazyselectcheckbox-container' +
-        (optionSelected ? ' lazyselectcheckbox-active' : '')
+        (optionSelected ? ' lazyselectcheckbox-active' : '') +
+        (optionActive ? ' lazyselectcheckbox-hover' : '')
       }
-      style={optionStyle}>
+      style={optionStyle}
+      onMouseEnter={mouseEnterHandler}
+      id={id}>
       <input
         id={`lazyselectcheckbox-${index}`}
         type="checkbox"

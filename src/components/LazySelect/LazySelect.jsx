@@ -76,6 +76,7 @@ const LazySelect = React.memo((props) => {
   const [selectedDataList, setSelectedDataList] = useState(SelectedDataList);
   const [tagsInputDisabled, setTagsInputDisabled] = useState(true);
   const [startFrom, setStartFrom] = useState(InitialStartFrom);
+  const [cursor, setCursor] = useState(-1);
 
   const [virtualScrollState, setVirtualScrollState] = useState({
     start: 0,
@@ -83,6 +84,7 @@ const LazySelect = React.memo((props) => {
   });
 
   const optionsContainerRef = useRef(null);
+  const activeOptionRef = useRef(null);
   const lazySelectRef = useRef(null);
   const lazyInputRef = useRef(null);
 
@@ -305,11 +307,16 @@ const LazySelect = React.memo((props) => {
         }
       }
       let optionSelected = isOptionSelected(value, selectedDataList);
+      let optionActive = cursor === index;
       if (RenderOptionComponent != null) {
         return RenderOptionComponent({
           key: index,
           index: index,
+          ref: optionActive ? activeOptionRef : null,
+          id: `lazyselectcheckbox-container-${index}`,
+          setCursor: setCursor,
           optionSelected: optionSelected,
+          optionActive: optionActive,
           DisplayCheckBoxForOptions: DisplayCheckBoxForOptions,
           handleOptionSelectedUnselected: handleOptionSelectedUnselected,
           optionValue: value,
@@ -325,7 +332,11 @@ const LazySelect = React.memo((props) => {
         <LazyOption
           key={index}
           index={index}
+          oRef={optionActive ? activeOptionRef : null}
+          id={`lazyselectcheckbox-container-${index}`}
+          setCursor={setCursor}
           optionSelected={optionSelected}
+          optionActive={optionActive}
           DisplayCheckBoxForOptions={DisplayCheckBoxForOptions}
           handleOptionSelectedUnselected={handleOptionSelectedUnselected}
           value={value}
@@ -443,6 +454,7 @@ const LazySelect = React.memo((props) => {
             RenderLimitComponent={RenderLimitComponent}
             RenderInputComponent={RenderInputComponent}
             OnInputPasteHandler={OnInputPasteHandler}
+            onKeyDown={handleKeyDown}
           />
         );
       }
@@ -513,6 +525,54 @@ const LazySelect = React.memo((props) => {
       </div>
     );
   };
+
+  const handleKeyDown = (e) => {
+    Logger.LogMessage('from key down', localDataList);
+    let newCursor = -1;
+    if (localDataList.length !== 0) {
+      if (e.keyCode === 38 && cursor > 0) {
+        setCursor((prevState) => {
+          newCursor = prevState - 1;
+          return newCursor;
+        });
+        checkIfInView();
+      } else if (e.keyCode === 40 && cursor < localDataList.length - 1) {
+        setCursor((prevState) => {
+          newCursor = prevState + 1;
+          return newCursor;
+        });
+        checkIfInView();
+      } else if (e.keyCode === 13) {
+        let activeOptionTobeSelected = {...localDataList[cursor]};
+        let activeOptionTobeSelected_IsSelected =
+          selectedDataList.find(
+            (sdl) => sdl[UniqueKey] === activeOptionTobeSelected[UniqueKey]
+          ) ?? false;
+        handleOptionSelectedUnselected(
+          activeOptionTobeSelected_IsSelected ? false : true,
+          activeOptionTobeSelected
+        );
+      }
+    }
+  };
+
+  const checkIfInView = () => {
+    if (!activeOptionRef.current) {
+      return;
+    }
+    activeOptionRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+      inline: 'nearest',
+    });
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  });
 
   Logger.LogMessage('local data length', localDataList.length);
   const containerStyle = Virtualized

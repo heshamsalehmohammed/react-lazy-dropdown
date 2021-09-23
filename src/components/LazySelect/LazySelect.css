@@ -26,7 +26,7 @@
   overflow-y: hidden;
 }
 
-.lazyselect-select-output .icon{
+.lazyselect-select-output .icon {
   height: 100%;
 }
 
@@ -136,11 +136,11 @@
   border: #ffffff 1px solid;
   border-radius: 0.2em;
 }
-.lazyselectcheckbox-active:hover {
+.lazyselectcheckbox-active.lazyselectcheckbox-hover {
   background-color: rgb(0, 102, 165, 16%) !important;
 }
 
-.lazyselectcheckbox-container:hover {
+.lazyselectcheckbox-container.lazyselectcheckbox-hover {
   background-color: rgba(64, 87, 101, 14%);
 }
 
@@ -200,13 +200,14 @@
 
 .lazyselect-select-buttons {
   position: sticky;
-  bottom: 4px;
+  bottom: 0px;
   display: flex;
   width: 100%;
   justify-content: center;
   background-color: #fff;
   align-self: center;
   text-align: center;
+  padding: 5px;
 }
 
 .lazyselect-select-buttons button {

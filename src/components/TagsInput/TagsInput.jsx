@@ -21,7 +21,7 @@ const TagsInput = React.memo((props) => {
     RenderTagComponent,
     RenderLimitComponent,
     RenderInputComponent,
-    OnInputPasteHandler
+    OnInputPasteHandler,
   } = props;
 
   const lazyInputRef = useRef(null);
