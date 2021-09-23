@@ -385,7 +385,9 @@ const LazySelect = React.memo((props) => {
   };
 
   useEffect(() => {
-    coreToggleShow();
+    if (OpenOnRendering) {
+      coreToggleShow();
+    }
   }, [OpenOnRendering]);
 
   const scollPos = (optionsContainer) => {
