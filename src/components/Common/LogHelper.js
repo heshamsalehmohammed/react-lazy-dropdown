@@ -1,5 +1,5 @@
 import {modesEnum} from './enums';
-import {mode} from '../../../config.json';
+import {mode} from '../config.json';
 
 const LogMessage = (...args) => {
   if (mode === modesEnum.Development) console.log(...args);

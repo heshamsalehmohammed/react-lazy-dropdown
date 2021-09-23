@@ -9,10 +9,12 @@
 .tags-input input {
   flex: 1;
   border: none;
-  height: 46px;
   font-size: 14px;
   padding: 4px 0 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 
 .tags-input input:disabled {
   color: inherit;

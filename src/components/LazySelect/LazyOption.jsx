@@ -41,7 +41,8 @@ const LazyOption = React.memo((props) => {
       />
       <label
         htmlFor={`lazyselectcheckbox-${index}`}
-        className="lazyselectcheckbox-label">
+        className="lazyselectcheckbox-label"
+        title={value[DisplayBy]}>
         {value[DisplayBy]}
       </label>
     </div>

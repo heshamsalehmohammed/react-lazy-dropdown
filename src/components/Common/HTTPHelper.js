@@ -57,15 +57,9 @@ export const parseResponseResultsHierarchy = (
 ) => {
   let _reponse = response;
   let levels = responseResultsHierarchy.split('/');
+  
   levels.forEach((level) => {
     _reponse = _reponse[level];
   });
-  return _reponse/* .map((rs) => ({
-    ...rs,
-    Name: (rs.Name += getRandomArbitrary(1, 1515216525555555555555656536265)),
-  })) */;
+  return _reponse;
 };
-
-function getRandomArbitrary(min, max) {
-  return Math.random() * (max - min) + min;
-}

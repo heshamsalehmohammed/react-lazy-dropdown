@@ -1,5 +1,6 @@
 import './LazySelect.css';
 import React, {useState, useEffect, useRef, useCallback} from 'react';
+import ReactDOM from 'react-dom';
 import TagsInput from '../TagsInput/TagsInput';
 import {getDataList, parseResponseResultsHierarchy} from '../Common/HTTPHelper';
 import {isElementAtBottom} from '../Common/ScrollHelper';
@@ -34,6 +35,7 @@ const LazySelect = React.memo((props) => {
     DisplayShowMoreOptionCallBack = () => {},
     SelectionChangedCallBack = () => {},
     SelectedDataList = [],
+    FillSelectedDataListUniqueKeyFromServer = false,
     IsMulti = true,
     ShowTags = true,
     TagComponent = null,
@@ -41,6 +43,10 @@ const LazySelect = React.memo((props) => {
     Virtualized = false,
     numVisibleItems = 10,
     itemheight = 36.4,
+    OptionsBoxHeight = 250,
+    OpenOnRendering = false,
+    PerformCustomLoginOnOption = null,
+    OnDropDownClosed = () => {},
   } = props;
 
   if (!UniqueKey) {
@@ -69,6 +75,7 @@ const LazySelect = React.memo((props) => {
   });
 
   const optionsContainerRef = useRef(null);
+  const lazySelectRef = useRef(null);
   const lazyInputRef = useRef(null);
 
   const prepareRequestInfo = (StartFrom = null) => {
@@ -146,11 +153,20 @@ const LazySelect = React.memo((props) => {
       if (response.success) {
         let newLocalDLLength = InitialStartFrom;
         setLocalDataList((prevState) => {
+          Logger.LogMessage(response.data);
           let parsedResponseResultsHierarchy = parseResponseResultsHierarchy(
             ResponseResultsHierarchy,
             response.data
           );
-          const prevStateUniqueIdList = prevState.map((ps) => ps[UniqueKey]);
+          Logger.LogMessage(parsedResponseResultsHierarchy);
+
+          if (PerformCustomLoginOnOption != null) {
+            parsedResponseResultsHierarchy = parsedResponseResultsHierarchy?.map(
+              (pr, i) => PerformCustomLoginOnOption(pr, i)
+            );
+          }
+
+          const prevStateUniqueIdList = prevState?.map((ps) => ps[UniqueKey]);
           const duplicatedDataList =
             parsedResponseResultsHierarchy?.filter((newDL) =>
               prevStateUniqueIdList.includes(newDL[UniqueKey])
@@ -165,7 +181,10 @@ const LazySelect = React.memo((props) => {
                 (newDL) => !prevStateUniqueIdList.includes(newDL[UniqueKey])
               ) ?? [];
           }
-          const newLocalDL = [...prevState, ...parsedResponseResultsHierarchy];
+          const newLocalDL = [
+            ...(prevState ?? []),
+            ...(parsedResponseResultsHierarchy ?? []),
+          ];
           newLocalDLLength =
             newLocalDL.length === 0 ? InitialStartFrom : newLocalDL.length;
           return newLocalDL;
@@ -250,6 +269,7 @@ const LazySelect = React.memo((props) => {
       } else {
         setSelectedDataList((prevState) => {
           if (checked) {
+            setSearch(objectOfList[DisplayBy]);
             return [objectOfList];
           }
           return [];
@@ -303,6 +323,21 @@ const LazySelect = React.memo((props) => {
     }
   };
 
+  const coreToggleShow = () => {
+    if (isShown) {
+      setIsShown(false);
+      setSearch('');
+      setStartFrom(InitialStartFrom);
+      setLocalDataList([]);
+      setTagsInputDisabled(true);
+      OnDropDownClosed(selectedDataList);
+    } else {
+      setIsShown(true);
+      setShown(true);
+      setTagsInputDisabled(false);
+    }
+  };
+
   const toggleShow = (e) => {
     // Logger.LogMessage(e.target)
     if (
@@ -310,19 +345,13 @@ const LazySelect = React.memo((props) => {
       e.target.classList.contains('lazyselect-select-output') ||
       e.target.classList.contains('arrow')
     ) {
-      if (isShown) {
-        setIsShown(false);
-        setSearch('');
-        setStartFrom(InitialStartFrom);
-        setLocalDataList([]);
-        setTagsInputDisabled(true);
-      } else {
-        setIsShown(true);
-        setShown(true);
-        setTagsInputDisabled(false);
-      }
+      coreToggleShow();
     }
   };
+
+  useEffect(() => {
+    coreToggleShow();
+  }, [OpenOnRendering]);
 
   const scollPos = (optionsContainer) => {
     let currentIndx = Math.trunc(optionsContainer.scrollTop / itemheight);
@@ -390,6 +419,9 @@ const LazySelect = React.memo((props) => {
       return (
         <div className="tags-input">
           <input
+            style={{
+              height: '100%',
+            }}
             ref={lazyInputRef}
             autoFocus
             disabled={tagsInputDisabled || !Filterable}
@@ -397,6 +429,7 @@ const LazySelect = React.memo((props) => {
             value={search}
             onChange={onSearchChange}
             placeholder={selectedDataList[0][DisplayBy]}
+            title={selectedDataList[0][DisplayBy]}
           />
         </div>
       );
@@ -404,6 +437,9 @@ const LazySelect = React.memo((props) => {
     return (
       <div className="tags-input">
         <input
+          style={{
+            height: '100%',
+          }}
           ref={lazyInputRef}
           autoFocus
           disabled={tagsInputDisabled || !Filterable}
@@ -424,32 +460,34 @@ const LazySelect = React.memo((props) => {
       }
     : {};
 
+  let lazySelectBoundingClientRect = lazySelectRef.current?.getBoundingClientRect();
+
   return (
-    <div className="lazyselect">
-      <div className="lazyselect-select-wrapper">
-        <div className="lazyselect-select">
-          <div
-            onClick={toggleShow}
-            className={
-              isShown
-                ? 'lazyselect-select-output active'
-                : 'lazyselect-select-output'
-            }>
-            {getSelectOutput()}
-            <div
-              className="icon"
-              style={{
-                lineHeight: isShown ? '49px' : '46px',
-              }}>
-              <i className={`arrow ${isShown ? 'up' : 'down'}`} />
-            </div>
-          </div>
+    <div className="lazyselect-select" ref={lazySelectRef}>
+      <div
+        onClick={toggleShow}
+        className={
+          isShown
+            ? 'lazyselect-select-output active'
+            : 'lazyselect-select-output'
+        }>
+        {getSelectOutput()}
+        <div className="icon">
+          <i className={`arrow ${isShown ? 'up' : 'down'}`} />
+        </div>
+      </div>
+      {isShown &&
+        ReactDOM.createPortal(
           <div
             ref={optionsContainerRef}
             className={
               isShown ? 'lazyselect-select-box show' : 'lazyselect-select-box'
             }
-            onScroll={optionsContainerScrollHandler}>
+            onScroll={optionsContainerScrollHandler}
+            style={{
+              width: lazySelectBoundingClientRect.width,
+              height: OptionsBoxHeight,
+            }}>
             <div
               className="lazyselectcheckbox-list-container"
               style={containerStyle}>
@@ -463,9 +501,12 @@ const LazySelect = React.memo((props) => {
                 Somthing went wrong!, Check your server!
               </div>
             )}
-          </div>
-        </div>
-      </div>
+            {!loading && !hasError && localDataList.length === 0 && (
+              <div className="lazyselect-select-buttons">No Items Found!..</div>
+            )}
+          </div>,
+          lazySelectRef.current
+        )}
     </div>
   );
 });
