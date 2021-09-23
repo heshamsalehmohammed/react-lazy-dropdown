@@ -1,4 +1,9 @@
 import React, {useState, useEffect} from 'react';
+import Chip from '@material-ui/core/Chip';
+import Checkbox from '@material-ui/core/Checkbox';
+import TextField from '@material-ui/core/TextField';
+import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import {storiesOf} from '@storybook/react';
 import Logger from '../components/Common/LogHelper';
 import './app.css';
@@ -8,14 +13,70 @@ import {LazySelect} from '../components/index';
 
 const stories = storiesOf('App Test', module);
 
-const myCustomTagComponent = (props) => {
-  Logger.LogMessage(props);
-  return <div>my custom tag</div>;
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
+
+const myCustomRenderOptionComponent = (props) => {
+  const optionStyle =
+    props.Virtualized && props.FirstVirtualOption
+      ? {
+          marginTop: props.index * props.itemheight,
+          marginRight: 8,
+        }
+      : {marginRight: 8};
+  return (
+    <li
+      key={props.key}
+      className={
+        'lazyselectcheckbox-container' +
+        (props.optionSelected ? ' lazyselectcheckbox-active' : '')
+      }>
+      <Checkbox
+        icon={icon}
+        checkedIcon={checkedIcon}
+        style={optionStyle}
+        checked={props.optionSelected}
+        onChange={(e) =>
+          props.handleOptionSelectedUnselected(
+            e.target.checked,
+            props.optionValue
+          )
+        }
+      />
+      {props.optionValue.PreferdTerm ?? props.optionValue.PreferdCode}
+    </li>
+  );
 };
-const myCustomShowMoreComponent = (props) => {
+const myCustomRenderTagComponent = (props) => {
+  Logger.LogMessage(props);
+  return (
+    <Chip
+      label="Deleteable"
+      key={props.key}
+      label={props.optionValue.PreferdTerm ?? props.optionValue.PreferdCode}
+      color="primary"
+      className="input-tag"
+      onDelete={() =>
+        props.handleOptionSelectedUnselected(false, props.optionValue)
+      }
+    />
+  );
+};
+const myCustomRenderLimitComponent = (props) => {
   Logger.LogMessage(props);
   return <div>my custom show more</div>;
 };
+
+const myCustomRenderInputComponent = (props) => (
+  <TextField
+    {...props}
+    label=" "
+    InputLabelProps={{shrink: false}}
+    onPaste={() => alert('data pasted')}
+    variant="outlined"
+    size="small"
+  />
+);
 
 const performCustomLoginOnOption = (option, index) => {
   return {
@@ -44,6 +105,10 @@ stories.add('App', () => {
       selectedOptions.length + ' items selected from selectionChangedCallBack',
       selectedOptions
     );
+  };
+
+  const onInputPasteHandler = (e) => {
+    Logger.LogMessage('from paste', e);
   };
 
   return (
@@ -82,16 +147,19 @@ stories.add('App', () => {
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
           SelectionChangedCallBack={selectionChangedCallBack}
           SelectedDataList={[]}
-          IsMulti={false}
+          IsMulti={true}
           ShowTags={true}
-          TagComponent={/* myCustomTagComponent */ null}
-          ShowMoreComponent={/* myCustomShowMoreComponent */ null}
           Virtualized={false}
           numVisibleItems={10}
           itemheight={36.4}
           OpenOnRendering={true}
           PerformCustomLoginOnOption={performCustomLoginOnOption}
           OnDropDownClosed={onDropDownClosed}
+          RenderOptionComponent={/* myCustomRenderOptionComponent */ null}
+          RenderTagComponent={/* myCustomRenderTagComponent */ null}
+          RenderInputComponent={/* myCustomRenderInputComponent */ null}
+          RenderLimitComponent={/* myCustomRenderLimitComponent */ null}
+          OnInputPasteHandler={onInputPasteHandler}
         />
       </div>
     </>

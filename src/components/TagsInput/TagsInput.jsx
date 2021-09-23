@@ -18,8 +18,10 @@ const TagsInput = React.memo((props) => {
     maximunOptionToShow,
     displayShowMoreOptionCallBack,
     tagsInputDisabled,
-    TagComponent,
-    ShowMoreComponent,
+    RenderTagComponent,
+    RenderLimitComponent,
+    RenderInputComponent,
+    OnInputPasteHandler
   } = props;
 
   const lazyInputRef = useRef(null);
@@ -35,14 +37,12 @@ const TagsInput = React.memo((props) => {
     displayBy,
     handleOptionSelectedUnselected
   ) => {
-    if (TagComponent != null) {
-      return (
-        <TagComponent
-          key={index}
-          optionValue={value}
-          handleOptionSelectedUnselected={handleOptionSelectedUnselected}
-        />
-      );
+    if (RenderTagComponent != null) {
+      return RenderTagComponent({
+        key: index,
+        optionValue: value,
+        handleOptionSelectedUnselected: handleOptionSelectedUnselected,
+      });
     }
     return (
       <LazyTag
@@ -59,8 +59,8 @@ const TagsInput = React.memo((props) => {
     maximunOptionToShow,
     displayShowMoreOptionCallBack
   ) => {
-    if (ShowMoreComponent != null) {
-      return <ShowMoreComponent selectedDataList={selectedDataList} />;
+    if (RenderLimitComponent != null) {
+      return RenderLimitComponent(selectedDataList);
     }
     return (
       <LazyShowMore
@@ -90,17 +90,28 @@ const TagsInput = React.memo((props) => {
             displayShowMoreOptionCallBack
           )}
       </ul>
-      {Filterable && (
-        <input
-          ref={lazyInputRef}
-          autoFocus
-          disabled={tagsInputDisabled}
-          type="text"
-          value={searchValue}
-          onChange={onSearchChange}
-          placeholder={placeHolder}
-        />
-      )}
+      {Filterable &&
+        (RenderInputComponent == null ? (
+          <input
+            ref={lazyInputRef}
+            autoFocus
+            disabled={tagsInputDisabled}
+            type="text"
+            value={searchValue}
+            onChange={onSearchChange}
+            placeholder={placeHolder}
+            onPaste={OnInputPasteHandler}
+          />
+        ) : (
+          RenderInputComponent({
+            ref: lazyInputRef,
+            disabled: tagsInputDisabled,
+            type: 'text',
+            value: searchValue,
+            onChange: onSearchChange,
+            placeholder: placeHolder,
+          })
+        ))}
     </div>
   );
 });

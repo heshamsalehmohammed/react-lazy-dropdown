@@ -132,7 +132,7 @@
 }
 
 .lazyselectcheckbox-active {
-  background-color: rgba(30, 167, 253, 19%);
+  background-color: rgba(30, 167, 253, 19%) !important;
   border: #ffffff 1px solid;
   border-radius: 0.2em;
 }

@@ -1,5 +1,11 @@
 import './LazySelect.css';
-import React, {useState, useEffect, useRef, useCallback} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+} from 'react';
 import ReactDOM from 'react-dom';
 import TagsInput from '../TagsInput/TagsInput';
 import {getDataList, parseResponseResultsHierarchy} from '../Common/HTTPHelper';
@@ -35,11 +41,8 @@ const LazySelect = React.memo((props) => {
     DisplayShowMoreOptionCallBack = () => {},
     SelectionChangedCallBack = () => {},
     SelectedDataList = [],
-    FillSelectedDataListUniqueKeyFromServer = false,
     IsMulti = true,
     ShowTags = true,
-    TagComponent = null,
-    ShowMoreComponent = null,
     Virtualized = false,
     numVisibleItems = 10,
     itemheight = 36.4,
@@ -47,6 +50,11 @@ const LazySelect = React.memo((props) => {
     OpenOnRendering = false,
     PerformCustomLoginOnOption = null,
     OnDropDownClosed = () => {},
+    RenderOptionComponent = null,
+    RenderTagComponent = null,
+    RenderInputComponent = null,
+    RenderLimitComponent = null,
+    OnInputPasteHandler = () => {},
   } = props;
 
   if (!UniqueKey) {
@@ -297,6 +305,22 @@ const LazySelect = React.memo((props) => {
         }
       }
       let optionSelected = isOptionSelected(value, selectedDataList);
+      if (RenderOptionComponent != null) {
+        return RenderOptionComponent({
+          key: index,
+          index: index,
+          optionSelected: optionSelected,
+          DisplayCheckBoxForOptions: DisplayCheckBoxForOptions,
+          handleOptionSelectedUnselected: handleOptionSelectedUnselected,
+          optionValue: value,
+          DisplayBy: DisplayBy,
+          itemheight: itemheight,
+          Virtualized: Virtualized,
+          FirstVirtualOption: Virtualized
+            ? index === virtualScrollState.start
+            : false,
+        });
+      }
       return (
         <LazyOption
           key={index}
@@ -384,7 +408,12 @@ const LazySelect = React.memo((props) => {
     prevAtBottom.current = atBottom;
   };
 
-  useEffect(() => {
+  const firstUpdate = useRef(true);
+  useLayoutEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
     SelectionChangedCallBack(selectedDataList);
   }, [selectedDataList]);
 
@@ -410,14 +439,51 @@ const LazySelect = React.memo((props) => {
             maximunOptionToShow={MaximunOptionToShow}
             displayShowMoreOptionCallBack={DisplayShowMoreOptionCallBack}
             tagsInputDisabled={tagsInputDisabled}
-            TagComponent={TagComponent}
-            ShowMoreComponent={ShowMoreComponent}
+            RenderTagComponent={RenderTagComponent}
+            RenderLimitComponent={RenderLimitComponent}
+            RenderInputComponent={RenderInputComponent}
+            OnInputPasteHandler={OnInputPasteHandler}
           />
         );
       }
     } else if (selectedDataList[0]) {
       return (
         <div className="tags-input">
+          {RenderInputComponent == null ? (
+            <input
+              style={{
+                height: '100%',
+              }}
+              ref={lazyInputRef}
+              autoFocus
+              disabled={tagsInputDisabled || !Filterable}
+              type="text"
+              value={search}
+              onChange={onSearchChange}
+              placeholder={selectedDataList[0][DisplayBy]}
+              title={selectedDataList[0][DisplayBy]}
+              onPaste={OnInputPasteHandler}
+            />
+          ) : (
+            RenderInputComponent({
+              style: {
+                height: '100%',
+              },
+              ref: lazyInputRef,
+              disabled: tagsInputDisabled || !Filterable,
+              type: 'text',
+              value: search,
+              onChange: onSearchChange,
+              placeholder: selectedDataList[0][DisplayBy],
+              title: selectedDataList[0][DisplayBy],
+            })
+          )}
+        </div>
+      );
+    }
+    return (
+      <div className="tags-input">
+        {RenderInputComponent == null ? (
           <input
             style={{
               height: '100%',
@@ -426,28 +492,24 @@ const LazySelect = React.memo((props) => {
             autoFocus
             disabled={tagsInputDisabled || !Filterable}
             type="text"
-            value={search}
             onChange={onSearchChange}
-            placeholder={selectedDataList[0][DisplayBy]}
-            title={selectedDataList[0][DisplayBy]}
+            value={search}
+            placeholder={PlaceHolder}
+            onPaste={OnInputPasteHandler}
           />
-        </div>
-      );
-    }
-    return (
-      <div className="tags-input">
-        <input
-          style={{
-            height: '100%',
-          }}
-          ref={lazyInputRef}
-          autoFocus
-          disabled={tagsInputDisabled || !Filterable}
-          type="text"
-          onChange={onSearchChange}
-          value={search}
-          placeholder={PlaceHolder}
-        />
+        ) : (
+          RenderInputComponent({
+            style: {
+              height: '100%',
+            },
+            ref: lazyInputRef,
+            disabled: tagsInputDisabled || !Filterable,
+            type: 'text',
+            onChange: onSearchChange,
+            value: search,
+            placeholder: PlaceHolder,
+          })
+        )}
       </div>
     );
   };
