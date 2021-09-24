@@ -37,7 +37,7 @@ const LazySelect = React.memo((props) => {
     ResponseResultsHierarchy = '',
     DisplayCheckBoxForOptions = true,
     DisplayShowMoreOption = true,
-    MaximunOptionToShow = -1,
+    MaximunOptionToShow = 1,
     DisplayShowMoreOptionCallBack = () => {},
     SelectionChangedCallBack = () => {},
     SelectedDataList = [],
@@ -55,6 +55,7 @@ const LazySelect = React.memo((props) => {
     RenderInputComponent = null,
     RenderLimitComponent = null,
     OnInputPasteHandler = () => {},
+    EnsureSelectedDataListRenderedInOptions = false,
   } = props;
 
   if (!UniqueKey) {
@@ -172,7 +173,7 @@ const LazySelect = React.memo((props) => {
 
           if (PerformCustomLoginOnOption != null) {
             parsedResponseResultsHierarchy = parsedResponseResultsHierarchy?.map(
-              (pr, i) => PerformCustomLoginOnOption(pr, i)
+              (pr, i) => PerformCustomLoginOnOption(pr, i, i + prevState.length)
             );
           }
 
@@ -191,6 +192,17 @@ const LazySelect = React.memo((props) => {
                 (newDL) => !prevStateUniqueIdList.includes(newDL[UniqueKey])
               ) ?? [];
           }
+
+          if (EnsureSelectedDataListRenderedInOptions) {
+            const selectedDataUniqueIdList = selectedDataList.map(
+              (sd) => sd[UniqueKey]
+            );
+            parsedResponseResultsHierarchy =
+              parsedResponseResultsHierarchy?.filter(
+                (newDL) => !selectedDataUniqueIdList.includes(newDL[UniqueKey])
+              ) ?? [];
+          }
+
           const newLocalDL = [
             ...(prevState ?? []),
             ...(parsedResponseResultsHierarchy ?? []),
@@ -285,6 +297,11 @@ const LazySelect = React.memo((props) => {
           return [];
         });
       }
+      if (EnsureSelectedDataListRenderedInOptions && !checked) {
+        setLocalDataList((prevState) => {
+          return [objectOfList, ...prevState];
+        });
+      }
     }
   );
 
@@ -296,7 +313,17 @@ const LazySelect = React.memo((props) => {
   };
 
   const getLiListItems = () => {
-    return localDataList.map((value, index) => {
+    let dataListToRender = localDataList;
+    if (EnsureSelectedDataListRenderedInOptions) {
+      const localDataUniqueIdList = localDataList?.map((ld) => ld[UniqueKey]);
+      dataListToRender = [
+        ...selectedDataList.filter(
+          (sd) => !localDataUniqueIdList.includes(sd[UniqueKey])
+        ),
+        ...localDataList,
+      ];
+    }
+    return dataListToRender.map((value, index) => {
       if (Virtualized) {
         if (
           !(

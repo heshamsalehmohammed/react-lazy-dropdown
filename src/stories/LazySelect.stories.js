@@ -146,7 +146,29 @@ stories.add('App', () => {
           MaximunOptionToShow={3}
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
           SelectionChangedCallBack={selectionChangedCallBack}
-          SelectedDataList={[]}
+          SelectedDataList={[
+            {
+              Oid: '((IWB3',
+              PreferdCodeSid: '((IWB3',
+              PreferdCode: 'EARDRY',
+              PreferdTermSid: '((IXB3',
+              PreferdTerm: 'EAR - DRY',
+            },
+            {
+              Oid: '((IYB3',
+              PreferdCodeSid: '((IYB3',
+              PreferdCode: 'EARLIQ',
+              PreferdTermSid: '((IZB3',
+              PreferdTerm: 'EAR - LIQUID',
+            },
+            {
+              Oid: "jkTYB5",
+              PreferdCode: "PTOW",
+              PreferdCodeSid: "jkTYB5",
+              PreferdTerm: "CHEMICAL APPLIED USING POTTER TOWER",
+              PreferdTermSid: "jkTZB5",
+            },
+          ]}
           IsMulti={true}
           ShowTags={true}
           Virtualized={false}
@@ -160,6 +182,7 @@ stories.add('App', () => {
           RenderInputComponent={/* myCustomRenderInputComponent */ null}
           RenderLimitComponent={/* myCustomRenderLimitComponent */ null}
           OnInputPasteHandler={onInputPasteHandler}
+          EnsureSelectedDataListRenderedInOptions
         />
       </div>
     </>

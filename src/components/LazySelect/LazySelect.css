@@ -28,6 +28,8 @@
 
 .lazyselect-select-output .icon {
   height: 100%;
+  line-height: 100%;
+  align-self: center;
 }
 
 .lazyselect-select-output p {
