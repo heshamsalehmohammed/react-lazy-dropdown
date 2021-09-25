@@ -113,7 +113,7 @@ stories.add('App', () => {
 
   return (
     <>
-      <div style={{width: '300px', margin: '200px'}}>
+      <div style={{width: '300px', margin: '100px'}}>
         <LazySelect
           ApiURL={
             'https://tps.syngentaaws.org:450/api/label/GetPaginatedLabelsByDomAndSDom'
@@ -170,11 +170,12 @@ stories.add('App', () => {
             },
           ]}
           IsMulti={true}
-          ShowTags={true}
+          DisplayTags={false}
           Virtualized={false}
           numVisibleItems={10}
           itemheight={36.4}
           OpenOnRendering={false}
+          AlwaysOpenMode={true}
           PerformCustomLoginOnOption={performCustomLoginOnOption}
           OnDropDownClosed={onDropDownClosed}
           RenderOptionComponent={/* myCustomRenderOptionComponent */ null}
@@ -182,7 +183,9 @@ stories.add('App', () => {
           RenderInputComponent={/* myCustomRenderInputComponent */ null}
           RenderLimitComponent={/* myCustomRenderLimitComponent */ null}
           OnInputPasteHandler={onInputPasteHandler}
-          EnsureSelectedDataListRenderedInOptions
+          EnsureSelectedDataListRenderedInOptions={false}
+          ForceCloseDropDown={false}
+          SetForceCloseDropDown={()=>{}}
         />
       </div>
     </>

@@ -3,6 +3,7 @@ import Logger from '../Common/LogHelper';
 
 const LazyOption = React.memo((props) => {
   const {
+    InstanceId,
     index,
     id,
     oRef,
@@ -41,7 +42,7 @@ const LazyOption = React.memo((props) => {
       onMouseEnter={mouseEnterHandler}
       id={id}>
       <input
-        id={`lazyselectcheckbox-${index}`}
+        id={`lazyselectcheckbox-${InstanceId}-${index}`}
         type="checkbox"
         className={`lazyselectcheckbox ${
           DisplayCheckBoxForOptions ? '' : 'checkbox-hidden'
@@ -52,7 +53,7 @@ const LazyOption = React.memo((props) => {
         checked={optionSelected}
       />
       <label
-        htmlFor={`lazyselectcheckbox-${index}`}
+        htmlFor={`lazyselectcheckbox-${InstanceId}-${index}`}
         className="lazyselectcheckbox-label"
         title={value[DisplayBy]}>
         {value[DisplayBy]}

@@ -18,17 +18,15 @@
   color: var(--color-accent);
   border-radius: 0.2rem;
   user-select: none;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   overflow-x: auto;
   justify-content: space-between;
   height: 100%;
   overflow-y: hidden;
+  border: 1px solid #ddd;
 }
 
 .lazyselect-select-output .icon {
-  height: 100%;
-  line-height: 100%;
   align-self: center;
 }
 

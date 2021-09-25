@@ -13,6 +13,7 @@ import {isElementAtBottom} from '../Common/ScrollHelper';
 import Logger from '../Common/LogHelper';
 import {flattenObject} from '../Common/CommonHelper';
 import LazyOption from './LazyOption';
+import {v4 as uuidv4} from 'uuid';
 
 const LazySelect = React.memo((props) => {
   const {
@@ -42,12 +43,13 @@ const LazySelect = React.memo((props) => {
     SelectionChangedCallBack = () => {},
     SelectedDataList = [],
     IsMulti = true,
-    ShowTags = true,
+    DisplayTags = true,
     Virtualized = false,
     numVisibleItems = 10,
     itemheight = 36.4,
     OptionsBoxHeight = 250,
     OpenOnRendering = false,
+    AlwaysOpenMode = false,
     PerformCustomLoginOnOption = null,
     OnDropDownClosed = () => {},
     RenderOptionComponent = null,
@@ -56,6 +58,8 @@ const LazySelect = React.memo((props) => {
     RenderLimitComponent = null,
     OnInputPasteHandler = () => {},
     EnsureSelectedDataListRenderedInOptions = false,
+    ForceCloseDropDown = false,
+    SetForceCloseDropDown = null,
   } = props;
 
   if (!UniqueKey) {
@@ -65,6 +69,8 @@ const LazySelect = React.memo((props) => {
   if (!ApiURL) {
     throw new Error('ApiURL for your data must be provided');
   }
+
+  const InstanceId = uuidv4();
 
   const [search, setSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
@@ -110,13 +116,11 @@ const LazySelect = React.memo((props) => {
         [StartFromRequestParamName]: StartFrom != null ? StartFrom : startFrom,
         [PageSizeRequestParamName]: PageSize,
       };
-      Logger.LogMessage('flatten object', flattenParametersObject);
       PathParameterArrangement.forEach((paramKey) => {
         if (flattenParametersObject.hasOwnProperty(paramKey)) {
           baseURL += `/${flattenParametersObject[paramKey]}`;
         }
       });
-      Logger.LogMessage('base url ', baseURL);
     } else if (useBodyParams) {
       data = {
         ...ExistingRequestParams,
@@ -164,12 +168,10 @@ const LazySelect = React.memo((props) => {
       if (response.success) {
         let newLocalDLLength = InitialStartFrom;
         setLocalDataList((prevState) => {
-          Logger.LogMessage(response.data);
           let parsedResponseResultsHierarchy = parseResponseResultsHierarchy(
             ResponseResultsHierarchy,
             response.data
           );
-          Logger.LogMessage(parsedResponseResultsHierarchy);
 
           if (PerformCustomLoginOnOption != null) {
             parsedResponseResultsHierarchy = parsedResponseResultsHierarchy?.map(
@@ -213,10 +215,6 @@ const LazySelect = React.memo((props) => {
         });
 
         setStartFrom(newLocalDLLength + InitialStartFrom);
-        Logger.LogMessage(
-          'new start from',
-          newLocalDLLength + InitialStartFrom
-        );
       } else {
         setHasError(true);
       }
@@ -244,7 +242,6 @@ const LazySelect = React.memo((props) => {
 
   useEffect(() => {
     if (scrolled) {
-      Logger.LogMessage('useEffect for scroll');
       fetchDataList();
     }
   }, [scrolled]);
@@ -268,7 +265,6 @@ const LazySelect = React.memo((props) => {
       if (searched) {
         setStartFrom(InitialStartFrom);
         setLocalDataList([]);
-        Logger.LogMessage('useEffect for search');
         fetchDataList(InitialStartFrom);
       }
     }, 500);
@@ -298,9 +294,15 @@ const LazySelect = React.memo((props) => {
         });
       }
       if (EnsureSelectedDataListRenderedInOptions && !checked) {
-        setLocalDataList((prevState) => {
-          return [objectOfList, ...prevState];
-        });
+        if (
+          !localDataList.find(
+            (ldl) => ldl[UniqueKey] === objectOfList[UniqueKey]
+          )
+        ) {
+          setLocalDataList((prevState) => {
+            return [objectOfList, ...prevState];
+          });
+        }
       }
     }
   );
@@ -340,7 +342,7 @@ const LazySelect = React.memo((props) => {
           key: index,
           index: index,
           ref: optionActive ? activeOptionRef : null,
-          id: `lazyselectcheckbox-container-${index}`,
+          id: `lazyselectcheckbox-container-${InstanceId}-${index}`,
           setCursor: setCursor,
           optionSelected: optionSelected,
           optionActive: optionActive,
@@ -357,10 +359,11 @@ const LazySelect = React.memo((props) => {
       }
       return (
         <LazyOption
+          InstanceId={InstanceId}
           key={index}
           index={index}
           oRef={optionActive ? activeOptionRef : null}
-          id={`lazyselectcheckbox-container-${index}`}
+          id={`lazyselectcheckbox-container-${InstanceId}-${index}`}
           setCursor={setCursor}
           optionSelected={optionSelected}
           optionActive={optionActive}
@@ -385,23 +388,29 @@ const LazySelect = React.memo((props) => {
     }
   };
 
+  const openDropDownActions = () => {
+    setIsShown(true);
+    setShown(true);
+    setTagsInputDisabled(false);
+  };
+  const closeDropDownActions = () => {
+    setIsShown(false);
+    setSearch('');
+    setStartFrom(InitialStartFrom);
+    setLocalDataList([]);
+    setTagsInputDisabled(true);
+    OnDropDownClosed(selectedDataList);
+  };
+
   const coreToggleShow = () => {
     if (isShown) {
-      setIsShown(false);
-      setSearch('');
-      setStartFrom(InitialStartFrom);
-      setLocalDataList([]);
-      setTagsInputDisabled(true);
-      OnDropDownClosed(selectedDataList);
+      closeDropDownActions();
     } else {
-      setIsShown(true);
-      setShown(true);
-      setTagsInputDisabled(false);
+      openDropDownActions();
     }
   };
 
   const toggleShow = (e) => {
-    // Logger.LogMessage(e.target)
     if (
       e.target.classList.contains('icon') ||
       e.target.classList.contains('lazyselect-select-output') ||
@@ -412,10 +421,10 @@ const LazySelect = React.memo((props) => {
   };
 
   useEffect(() => {
-    if (OpenOnRendering) {
+    if (OpenOnRendering || AlwaysOpenMode) {
       coreToggleShow();
     }
-  }, [OpenOnRendering]);
+  }, [OpenOnRendering, AlwaysOpenMode]);
 
   const scollPos = (optionsContainer) => {
     let currentIndx = Math.trunc(optionsContainer.scrollTop / itemheight);
@@ -459,42 +468,38 @@ const LazySelect = React.memo((props) => {
 
   const getSelectOutput = () => {
     if (IsMulti) {
-      if (ShowTags) {
-        return (
-          <TagsInput
-            uniqueKey={UniqueKey}
-            displayBy={DisplayBy}
-            Filterable={Filterable}
-            placeHolder={PlaceHolder}
-            selectedDataList={selectedDataList}
-            renderedSelectedDataList={
-              MaximunOptionToShow <= 0
-                ? selectedDataList
-                : selectedDataList.slice(0, MaximunOptionToShow)
-            }
-            onSearchChange={onSearchChange}
-            searchValue={search}
-            handleOptionSelectedUnselected={handleOptionSelectedUnselected}
-            displayShowMoreOption={DisplayShowMoreOption}
-            maximunOptionToShow={MaximunOptionToShow}
-            displayShowMoreOptionCallBack={DisplayShowMoreOptionCallBack}
-            tagsInputDisabled={tagsInputDisabled}
-            RenderTagComponent={RenderTagComponent}
-            RenderLimitComponent={RenderLimitComponent}
-            RenderInputComponent={RenderInputComponent}
-            OnInputPasteHandler={OnInputPasteHandler}
-            onKeyDown={handleKeyDown}
-          />
-        );
-      }
+      return (
+        <TagsInput
+          uniqueKey={UniqueKey}
+          displayBy={DisplayBy}
+          Filterable={Filterable}
+          placeHolder={PlaceHolder}
+          selectedDataList={selectedDataList}
+          renderedSelectedDataList={
+            MaximunOptionToShow <= 0
+              ? selectedDataList
+              : selectedDataList.slice(0, MaximunOptionToShow)
+          }
+          onSearchChange={onSearchChange}
+          searchValue={search}
+          handleOptionSelectedUnselected={handleOptionSelectedUnselected}
+          displayShowMoreOption={DisplayShowMoreOption}
+          maximunOptionToShow={MaximunOptionToShow}
+          displayShowMoreOptionCallBack={DisplayShowMoreOptionCallBack}
+          tagsInputDisabled={tagsInputDisabled}
+          RenderTagComponent={RenderTagComponent}
+          RenderLimitComponent={RenderLimitComponent}
+          RenderInputComponent={RenderInputComponent}
+          OnInputPasteHandler={OnInputPasteHandler}
+          /* handleKeyDown={handleKeyDown} */
+          DisplayTags={DisplayTags}
+        />
+      );
     } else if (selectedDataList[0]) {
       return (
         <div className="tags-input">
           {RenderInputComponent == null ? (
             <input
-              style={{
-                height: '100%',
-              }}
               ref={lazyInputRef}
               autoFocus
               disabled={tagsInputDisabled || !Filterable}
@@ -504,12 +509,10 @@ const LazySelect = React.memo((props) => {
               placeholder={selectedDataList[0][DisplayBy]}
               title={selectedDataList[0][DisplayBy]}
               onPaste={OnInputPasteHandler}
+              /* onKeyDown={handleKeyDown} */
             />
           ) : (
             RenderInputComponent({
-              style: {
-                height: '100%',
-              },
               ref: lazyInputRef,
               disabled: tagsInputDisabled || !Filterable,
               type: 'text',
@@ -517,6 +520,7 @@ const LazySelect = React.memo((props) => {
               onChange: onSearchChange,
               placeholder: selectedDataList[0][DisplayBy],
               title: selectedDataList[0][DisplayBy],
+              /* onKeyDown: handleKeyDown, */
             })
           )}
         </div>
@@ -526,9 +530,6 @@ const LazySelect = React.memo((props) => {
       <div className="tags-input">
         {RenderInputComponent == null ? (
           <input
-            style={{
-              height: '100%',
-            }}
             ref={lazyInputRef}
             autoFocus
             disabled={tagsInputDisabled || !Filterable}
@@ -537,18 +538,17 @@ const LazySelect = React.memo((props) => {
             value={search}
             placeholder={PlaceHolder}
             onPaste={OnInputPasteHandler}
+            /* onKeyDown={handleKeyDown} */
           />
         ) : (
           RenderInputComponent({
-            style: {
-              height: '100%',
-            },
             ref: lazyInputRef,
             disabled: tagsInputDisabled || !Filterable,
             type: 'text',
             onChange: onSearchChange,
             value: search,
             placeholder: PlaceHolder,
+            /* onKeyDown: handleKeyDown, */
           })
         )}
       </div>
@@ -558,21 +558,34 @@ const LazySelect = React.memo((props) => {
   const handleKeyDown = (e) => {
     Logger.LogMessage('from key down', localDataList);
     let newCursor = -1;
-    if (localDataList.length !== 0) {
+
+    let localDataToFind = localDataList;
+
+    if (EnsureSelectedDataListRenderedInOptions) {
+      const localDataUniqueIdList = localDataList?.map((ld) => ld[UniqueKey]);
+      localDataToFind = [
+        ...selectedDataList.filter(
+          (sd) => !localDataUniqueIdList.includes(sd[UniqueKey])
+        ),
+        ...localDataList,
+      ];
+    }
+
+    if (localDataToFind.length !== 0) {
       if (e.keyCode === 38 && cursor > 0) {
         setCursor((prevState) => {
           newCursor = prevState - 1;
           return newCursor;
         });
         checkIfInView();
-      } else if (e.keyCode === 40 && cursor < localDataList.length - 1) {
+      } else if (e.keyCode === 40 && cursor < localDataToFind.length - 1) {
         setCursor((prevState) => {
           newCursor = prevState + 1;
           return newCursor;
         });
         checkIfInView();
       } else if (e.keyCode === 13) {
-        let activeOptionTobeSelected = {...localDataList[cursor]};
+        let activeOptionTobeSelected = {...localDataToFind[cursor]};
         let activeOptionTobeSelected_IsSelected =
           selectedDataList.find(
             (sdl) => sdl[UniqueKey] === activeOptionTobeSelected[UniqueKey]
@@ -596,14 +609,6 @@ const LazySelect = React.memo((props) => {
     });
   };
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  });
-
-  Logger.LogMessage('local data length', localDataList.length);
   const containerStyle = Virtualized
     ? {
         height: localDataList.length * itemheight,
@@ -613,19 +618,35 @@ const LazySelect = React.memo((props) => {
 
   let lazySelectBoundingClientRect = lazySelectRef.current?.getBoundingClientRect();
 
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  });
+
+  useEffect(() => {
+    if (ForceCloseDropDown) {
+      closeDropDownActions();
+      SetForceCloseDropDown(false);
+    }
+  }, [ForceCloseDropDown]);
+
   return (
     <div className="lazyselect-select" ref={lazySelectRef}>
       <div
-        onClick={toggleShow}
+        onClick={AlwaysOpenMode ? () => {} : toggleShow}
         className={
           isShown
             ? 'lazyselect-select-output active'
             : 'lazyselect-select-output'
         }>
         {getSelectOutput()}
-        <div className="icon">
-          <i className={`arrow ${isShown ? 'up' : 'down'}`} />
-        </div>
+        {!AlwaysOpenMode && (
+          <div className="icon">
+            <i className={`arrow ${isShown ? 'up' : 'down'}`} />
+          </div>
+        )}
       </div>
       {isShown &&
         ReactDOM.createPortal(

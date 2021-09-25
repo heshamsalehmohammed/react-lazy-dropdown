@@ -22,6 +22,8 @@ const TagsInput = React.memo((props) => {
     RenderLimitComponent,
     RenderInputComponent,
     OnInputPasteHandler,
+    /* handleKeyDown, */
+    DisplayTags,
   } = props;
 
   const lazyInputRef = useRef(null);
@@ -73,23 +75,25 @@ const TagsInput = React.memo((props) => {
 
   return (
     <div className="tags-input">
-      <ul id="tags">
-        {renderedSelectedDataList.map((value, index) => {
-          return getTagComponent(
-            index,
-            value,
-            displayBy,
-            handleOptionSelectedUnselected
-          );
-        })}
-        {selectedDataList.length > maximunOptionToShow &&
-          displayShowMoreOption &&
-          getShowMoreComponent(
-            selectedDataList,
-            maximunOptionToShow,
-            displayShowMoreOptionCallBack
-          )}
-      </ul>
+      {DisplayTags && (
+        <ul id="tags">
+          {renderedSelectedDataList.map((value, index) => {
+            return getTagComponent(
+              index,
+              value,
+              displayBy,
+              handleOptionSelectedUnselected
+            );
+          })}
+          {selectedDataList.length > maximunOptionToShow &&
+            displayShowMoreOption &&
+            getShowMoreComponent(
+              selectedDataList,
+              maximunOptionToShow,
+              displayShowMoreOptionCallBack
+            )}
+        </ul>
+      )}
       {Filterable &&
         (RenderInputComponent == null ? (
           <input
@@ -101,6 +105,7 @@ const TagsInput = React.memo((props) => {
             onChange={onSearchChange}
             placeholder={placeHolder}
             onPaste={OnInputPasteHandler}
+            /* onKeyDown={handleKeyDown} */
           />
         ) : (
           RenderInputComponent({
@@ -110,6 +115,7 @@ const TagsInput = React.memo((props) => {
             value: searchValue,
             onChange: onSearchChange,
             placeholder: placeHolder,
+            /* onKeyDown: handleKeyDown, */
           })
         ))}
     </div>
