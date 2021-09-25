@@ -60,6 +60,7 @@ const LazySelect = React.memo((props) => {
     EnsureSelectedDataListRenderedInOptions = false,
     ForceCloseDropDown = false,
     SetForceCloseDropDown = null,
+    DisplayUnselectAllButton = true,
   } = props;
 
   if (!UniqueKey) {
@@ -306,6 +307,23 @@ const LazySelect = React.memo((props) => {
       }
     }
   );
+
+  const UnselectAllHandler = () => {
+    setSelectedDataList((prevState) => {
+      if (EnsureSelectedDataListRenderedInOptions) {
+        const localDataUniqueIdList = localDataList.map((sd) => sd[UniqueKey]);
+        const notFoundSelectedDataList = prevState.filter(
+          (ps) => !localDataUniqueIdList.includes(ps[UniqueKey])
+        );
+
+        setLocalDataList((prevState) => {
+          return [...notFoundSelectedDataList, ...prevState];
+        });
+      }
+
+      return [];
+    });
+  };
 
   const isOptionSelected = (value, selectedDataList) => {
     let optionInSelectedList = selectedDataList.find(
@@ -647,6 +665,17 @@ const LazySelect = React.memo((props) => {
             <i className={`arrow ${isShown ? 'up' : 'down'}`} />
           </div>
         )}
+        {DisplayUnselectAllButton && (
+          <div
+            style={{
+              fontSize: 'larger',
+              fontWeight: 'bold',
+            }}
+            className="icon"
+            onClick={UnselectAllHandler}>
+            &#215;
+          </div>
+        )}
       </div>
       {isShown &&
         ReactDOM.createPortal(
@@ -658,6 +687,7 @@ const LazySelect = React.memo((props) => {
             onScroll={optionsContainerScrollHandler}
             style={{
               width: lazySelectBoundingClientRect.width,
+              minWidth: lazySelectBoundingClientRect.width,
               height: OptionsBoxHeight,
             }}>
             <div
