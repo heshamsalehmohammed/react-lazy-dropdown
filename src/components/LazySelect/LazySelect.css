@@ -29,6 +29,9 @@
 .lazyselect-select-output .icon {
   align-self: center;
 }
+.lazyselect-select-output .icon {
+  align-self: center;
+}
 
 .lazyselect-select-output p {
   padding: 0.5em;
@@ -38,11 +41,6 @@
 .lazyselect-select-output p.hide {
   display: none;
 }
-
-/* .lazyselect-select-output .icon {
-  height: 100%;
-  font-size: 29px;
-} */
 
 .lazyselect-select-box {
   width: calc(100% - 1.6em);

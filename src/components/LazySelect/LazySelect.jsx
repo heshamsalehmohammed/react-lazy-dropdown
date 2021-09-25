@@ -430,9 +430,10 @@ const LazySelect = React.memo((props) => {
 
   const toggleShow = (e) => {
     if (
-      e.target.classList.contains('icon') ||
-      e.target.classList.contains('lazyselect-select-output') ||
-      e.target.classList.contains('arrow')
+      (e.target.classList.contains('icon') ||
+        e.target.classList.contains('lazyselect-select-output') ||
+        e.target.classList.contains('arrow')) &&
+      !e.target.classList.contains('unselect-all')
     ) {
       coreToggleShow();
     }
@@ -660,20 +661,20 @@ const LazySelect = React.memo((props) => {
             : 'lazyselect-select-output'
         }>
         {getSelectOutput()}
-        {!AlwaysOpenMode && (
-          <div className="icon">
-            <i className={`arrow ${isShown ? 'up' : 'down'}`} />
-          </div>
-        )}
         {DisplayUnselectAllButton && (
           <div
             style={{
               fontSize: 'larger',
               fontWeight: 'bold',
             }}
-            className="icon"
+            className="unselect-all icon"
             onClick={UnselectAllHandler}>
             &#215;
+          </div>
+        )}
+        {!AlwaysOpenMode && (
+          <div className="icon">
+            <i className={`arrow ${isShown ? 'up' : 'down'}`} />
           </div>
         )}
       </div>
