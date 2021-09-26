@@ -59,7 +59,6 @@ const LazySelect = React.memo((props) => {
     RenderInputComponent = null,
     RenderLimitComponent = null,
     OnInputPasteHandler = () => {},
-    EnsureSelectedDataListRenderedInOptions = false,
     ForceCloseDropDown = false,
     SetForceCloseDropDown = null,
     DisplayUnselectAllButton = true,
@@ -201,16 +200,6 @@ const LazySelect = React.memo((props) => {
               ) ?? [];
           }
 
-          if (EnsureSelectedDataListRenderedInOptions) {
-            const selectedDataUniqueIdList = selectedDataList.map(
-              (sd) => sd[UniqueKey]
-            );
-            parsedResponseResultsHierarchy =
-              parsedResponseResultsHierarchy?.filter(
-                (newDL) => !selectedDataUniqueIdList.includes(newDL[UniqueKey])
-              ) ?? [];
-          }
-
           const newLocalDL = [
             ...(prevState ?? []),
             ...(parsedResponseResultsHierarchy ?? []),
@@ -309,33 +298,11 @@ const LazySelect = React.memo((props) => {
           return [];
         });
       }
-      if (EnsureSelectedDataListRenderedInOptions && !checked) {
-        if (
-          !localDataList.find(
-            (ldl) => ldl[UniqueKey] === objectOfList[UniqueKey]
-          )
-        ) {
-          setLocalDataList((prevState) => {
-            return [objectOfList, ...prevState];
-          });
-        }
-      }
     }
   );
 
   const UnselectAllHandler = () => {
     setSelectedDataList((prevState) => {
-      if (EnsureSelectedDataListRenderedInOptions) {
-        const localDataUniqueIdList = localDataList.map((sd) => sd[UniqueKey]);
-        const notFoundSelectedDataList = prevState.filter(
-          (ps) => !localDataUniqueIdList.includes(ps[UniqueKey])
-        );
-
-        setLocalDataList((prevState) => {
-          return [...notFoundSelectedDataList, ...prevState];
-        });
-      }
-
       return [];
     });
   };
@@ -354,17 +321,7 @@ const LazySelect = React.memo((props) => {
   };
 
   const getLiListItems = () => {
-    let dataListToRender = localDataList;
-    if (EnsureSelectedDataListRenderedInOptions) {
-      const localDataUniqueIdList = localDataList?.map((ld) => ld[UniqueKey]);
-      dataListToRender = [
-        ...selectedDataList.filter(
-          (sd) => !localDataUniqueIdList.includes(sd[UniqueKey])
-        ),
-        ...localDataList,
-      ];
-    }
-    return dataListToRender.map((value, index) => {
+    return localDataList.map((value, index) => {
       if (Virtualized) {
         if (
           !(
@@ -626,34 +583,21 @@ const LazySelect = React.memo((props) => {
   const handleKeyDown = (e) => {
     Logger.LogMessage('from key down', localDataList);
     let newCursor = -1;
-
-    let localDataToFind = localDataList;
-
-    if (EnsureSelectedDataListRenderedInOptions) {
-      const localDataUniqueIdList = localDataList?.map((ld) => ld[UniqueKey]);
-      localDataToFind = [
-        ...selectedDataList.filter(
-          (sd) => !localDataUniqueIdList.includes(sd[UniqueKey])
-        ),
-        ...localDataList,
-      ];
-    }
-
-    if (localDataToFind.length !== 0) {
+    if (localDataList.length !== 0) {
       if (e.keyCode === 38 && cursor > 0) {
         setCursor((prevState) => {
           newCursor = prevState - 1;
           return newCursor;
         });
         checkIfInView();
-      } else if (e.keyCode === 40 && cursor < localDataToFind.length - 1) {
+      } else if (e.keyCode === 40 && cursor < localDataList.length - 1) {
         setCursor((prevState) => {
           newCursor = prevState + 1;
           return newCursor;
         });
         checkIfInView();
       } else if (e.keyCode === 13) {
-        let activeOptionTobeSelected = {...localDataToFind[cursor]};
+        let activeOptionTobeSelected = {...localDataList[cursor]};
         let activeOptionTobeSelected_IsSelected =
           selectedDataList.find(
             (sdl) => sdl[UniqueKey] === activeOptionTobeSelected[UniqueKey]

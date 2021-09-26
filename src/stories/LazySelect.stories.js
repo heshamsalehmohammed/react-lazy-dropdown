@@ -213,7 +213,6 @@ stories.add('App', () => {
           RenderInputComponent={/* myCustomRenderInputComponent */ null}
           RenderLimitComponent={/* myCustomRenderLimitComponent */ null}
           OnInputPasteHandler={onInputPasteHandler}
-          EnsureSelectedDataListRenderedInOptions={true}
           ForceCloseDropDown={false}
           SetForceCloseDropDown={() => {}}
           SelectAllOptions={selectAll}
