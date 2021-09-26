@@ -31,7 +31,9 @@ const LazySelect = React.memo((props) => {
     usePathParams = false,
     PathParameterArrangement = [],
     PageSize = 10,
-    InitialStartFrom = 1,
+    useStartFromApproach = true,
+    usePageNumberApproach = false,
+    InitialStartFromOrPageNumber = 1,
     SearchRequestParamName = 'search',
     StartFromRequestParamName = 'from',
     PageSizeRequestParamName = 'size',
@@ -61,6 +63,7 @@ const LazySelect = React.memo((props) => {
     ForceCloseDropDown = false,
     SetForceCloseDropDown = null,
     DisplayUnselectAllButton = true,
+    SelectAllOptions = false,
   } = props;
 
   if (!UniqueKey) {
@@ -81,9 +84,9 @@ const LazySelect = React.memo((props) => {
   const [isShown, setIsShown] = useState(false);
   const [shown, setShown] = useState(false);
   const [localDataList, setLocalDataList] = useState([]);
-  const [selectedDataList, setSelectedDataList] = useState(SelectedDataList);
+  const [selectedDataList, setSelectedDataList] = useState(SelectedDataList)
   const [tagsInputDisabled, setTagsInputDisabled] = useState(true);
-  const [startFrom, setStartFrom] = useState(InitialStartFrom);
+  const [startFrom, setStartFrom] = useState(InitialStartFromOrPageNumber);
   const [cursor, setCursor] = useState(-1);
 
   const [virtualScrollState, setVirtualScrollState] = useState({
@@ -155,7 +158,8 @@ const LazySelect = React.memo((props) => {
       prevRequestInfo.current.data[StartFromRequestParamName]
     );
     if (
-      requestInfo.data[StartFromRequestParamName] === InitialStartFrom ||
+      requestInfo.data[StartFromRequestParamName] ===
+        InitialStartFromOrPageNumber ||
       requestInfo.data[StartFromRequestParamName] !==
         prevRequestInfo.current.data[StartFromRequestParamName]
     ) {
@@ -167,7 +171,7 @@ const LazySelect = React.memo((props) => {
         requestInfo.headers
       );
       if (response.success) {
-        let newLocalDLLength = InitialStartFrom;
+        let newLocalDLLength = InitialStartFromOrPageNumber;
         setLocalDataList((prevState) => {
           let parsedResponseResultsHierarchy = parseResponseResultsHierarchy(
             ResponseResultsHierarchy,
@@ -211,11 +215,21 @@ const LazySelect = React.memo((props) => {
             ...(parsedResponseResultsHierarchy ?? []),
           ];
           newLocalDLLength =
-            newLocalDL.length === 0 ? InitialStartFrom : newLocalDL.length;
+            newLocalDL.length === 0
+              ? InitialStartFromOrPageNumber
+              : newLocalDL.length;
           return newLocalDL;
         });
-
-        setStartFrom(newLocalDLLength + InitialStartFrom);
+        setStartFrom((prevState) => {
+          let newStartFrom = InitialStartFromOrPageNumber;
+          if (useStartFromApproach) {
+            newStartFrom = newLocalDLLength + InitialStartFromOrPageNumber;
+          }
+          if (usePageNumberApproach) {
+            newStartFrom = ++prevState;
+          }
+          return newStartFrom;
+        });
       } else {
         setHasError(true);
       }
@@ -235,9 +249,9 @@ const LazySelect = React.memo((props) => {
 
   useEffect(() => {
     if (shown) {
-      setStartFrom(InitialStartFrom);
+      setStartFrom(InitialStartFromOrPageNumber);
       setLocalDataList([]);
-      fetchDataList(InitialStartFrom);
+      fetchDataList(InitialStartFromOrPageNumber);
     }
   }, [shown]);
 
@@ -264,9 +278,9 @@ const LazySelect = React.memo((props) => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searched) {
-        setStartFrom(InitialStartFrom);
+        setStartFrom(InitialStartFromOrPageNumber);
         setLocalDataList([]);
-        fetchDataList(InitialStartFrom);
+        fetchDataList(InitialStartFromOrPageNumber);
       }
     }, 500);
     return () => clearTimeout(delayDebounceFn);
@@ -322,6 +336,12 @@ const LazySelect = React.memo((props) => {
       }
 
       return [];
+    });
+  };
+
+  const SelectAllHandler = () => {
+    setSelectedDataList((prevState) => {
+      return [...prevState, ...localDataList];
     });
   };
 
@@ -414,7 +434,7 @@ const LazySelect = React.memo((props) => {
   const closeDropDownActions = () => {
     setIsShown(false);
     setSearch('');
-    setStartFrom(InitialStartFrom);
+    setStartFrom(InitialStartFromOrPageNumber);
     setLocalDataList([]);
     setTagsInputDisabled(true);
     OnDropDownClosed(selectedDataList);
@@ -476,14 +496,33 @@ const LazySelect = React.memo((props) => {
     prevAtBottom.current = atBottom;
   };
 
-  const firstUpdate = useRef(true);
+  const firstUpdateForSelectedDataList = useRef(true);
   useLayoutEffect(() => {
-    if (firstUpdate.current) {
-      firstUpdate.current = false;
+    if (firstUpdateForSelectedDataList.current) {
+      firstUpdateForSelectedDataList.current = false;
       return;
     }
     SelectionChangedCallBack(selectedDataList);
   }, [selectedDataList]);
+
+  useEffect(() => {
+    setSelectedDataList(SelectedDataList);
+  }, [SelectedDataList]);
+
+  const firstUpdateForSelectAllOptions = useRef(true);
+  useLayoutEffect(() => {
+    if (firstUpdateForSelectAllOptions.current) {
+      firstUpdateForSelectAllOptions.current = false;
+      return;
+    }
+    if (SelectAllOptions) {
+      if (IsMulti) {
+        SelectAllHandler();
+      }
+    } else {
+      UnselectAllHandler();
+    }
+  }, [SelectAllOptions]);
 
   const getSelectOutput = () => {
     if (IsMulti) {

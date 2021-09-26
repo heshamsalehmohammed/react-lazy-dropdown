@@ -6,11 +6,11 @@ const LogMessage = (...args) => {
 };
 
 const LogWarning = (...args) => {
-  if (mode === modesEnum.Development) console.warn(...args);
+  console.warn(...args);
 };
 
 const LogError = (...args) => {
-  if (mode === modesEnum.Development) console.error(...args);
+  console.error(...args);
 };
 
 export default {

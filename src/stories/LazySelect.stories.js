@@ -111,8 +111,58 @@ stories.add('App', () => {
     Logger.LogMessage('from paste', e);
   };
 
+  const [selectAll, setSelectAll] = useState(false);
+
+  const selectAllCheckHandler = (e) => {
+    setSelectAll(e.target.checked);
+  };
+  const [selectedValues, setSelectedValues] = useState([
+    {
+      Oid: '((IWB3',
+      PreferdCodeSid: '((IWB3',
+      PreferdCode: 'EARDRY',
+      PreferdTermSid: '((IXB3',
+      PreferdTerm: 'EAR - DRY',
+    },
+    {
+      Oid: '((IYB3',
+      PreferdCodeSid: '((IYB3',
+      PreferdCode: 'EARLIQ',
+      PreferdTermSid: '((IZB3',
+      PreferdTerm: 'EAR - LIQUID',
+    },
+    {
+      Oid: 'jkTYB5',
+      PreferdCode: 'PTOW',
+      PreferdCodeSid: 'jkTYB5',
+      PreferdTerm: 'CHEMICAL APPLIED USING POTTER TOWER',
+      PreferdTermSid: 'jkTZB5',
+    },
+  ]);
+  const ChangeSelectedDataListHandler = () => {
+    setSelectedValues([
+      {
+        Oid: '((IWB3',
+        PreferdCodeSid: '((IWB3',
+        PreferdCode: 'EARDRY',
+        PreferdTermSid: '((IXB3',
+        PreferdTerm: 'EAR - DRY',
+      },
+    ]);
+  };
+
   return (
     <>
+      <div>
+        <input type="checkbox" id="vehicle3" onChange={selectAllCheckHandler} />
+        <label htmlFor="vehicle3"> select all</label>
+      </div>
+      <div>
+        <button onClick={ChangeSelectedDataListHandler}>
+          {' '}
+          change selected data{' '}
+        </button>
+      </div>
       <div style={{width: '300px', margin: '100px'}}>
         <LazySelect
           ApiURL={
@@ -136,7 +186,9 @@ stories.add('App', () => {
           usePathParams={false}
           PathParameterArrangement={['From', 'Size']}
           PageSize={10}
-          InitialStartFrom={1}
+          useStartFromApproach={true}
+          usePageNumberApproach={true}
+          InitialStartFromOrPageNumber={1}
           SearchRequestParamName={'SearchKeyword'}
           StartFromRequestParamName={'PageNumber'}
           PageSizeRequestParamName={'PageSize'}
@@ -146,31 +198,9 @@ stories.add('App', () => {
           MaximunOptionToShow={3}
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
           SelectionChangedCallBack={selectionChangedCallBack}
-          SelectedDataList={[
-            {
-              Oid: '((IWB3',
-              PreferdCodeSid: '((IWB3',
-              PreferdCode: 'EARDRY',
-              PreferdTermSid: '((IXB3',
-              PreferdTerm: 'EAR - DRY',
-            },
-            {
-              Oid: '((IYB3',
-              PreferdCodeSid: '((IYB3',
-              PreferdCode: 'EARLIQ',
-              PreferdTermSid: '((IZB3',
-              PreferdTerm: 'EAR - LIQUID',
-            },
-            {
-              Oid: "jkTYB5",
-              PreferdCode: "PTOW",
-              PreferdCodeSid: "jkTYB5",
-              PreferdTerm: "CHEMICAL APPLIED USING POTTER TOWER",
-              PreferdTermSid: "jkTZB5",
-            },
-          ]}
+          SelectedDataList={selectedValues}
           IsMulti={true}
-          DisplayTags={false}
+          DisplayTags={true}
           Virtualized={false}
           numVisibleItems={10}
           itemheight={36.4}
@@ -183,9 +213,10 @@ stories.add('App', () => {
           RenderInputComponent={/* myCustomRenderInputComponent */ null}
           RenderLimitComponent={/* myCustomRenderLimitComponent */ null}
           OnInputPasteHandler={onInputPasteHandler}
-          EnsureSelectedDataListRenderedInOptions={false}
+          EnsureSelectedDataListRenderedInOptions={true}
           ForceCloseDropDown={false}
-          SetForceCloseDropDown={()=>{}}
+          SetForceCloseDropDown={() => {}}
+          SelectAllOptions={selectAll}
         />
       </div>
     </>
