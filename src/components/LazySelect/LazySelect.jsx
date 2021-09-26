@@ -64,6 +64,7 @@ const LazySelect = React.memo((props) => {
     SetForceCloseDropDown = null,
     DisplayUnselectAllButton = true,
     SelectAllOptions = false,
+    ClosePopupAfterSelectionForNotMulti = false,
   } = props;
 
   if (!UniqueKey) {
@@ -84,7 +85,7 @@ const LazySelect = React.memo((props) => {
   const [isShown, setIsShown] = useState(false);
   const [shown, setShown] = useState(false);
   const [localDataList, setLocalDataList] = useState([]);
-  const [selectedDataList, setSelectedDataList] = useState(SelectedDataList)
+  const [selectedDataList, setSelectedDataList] = useState(SelectedDataList);
   const [tagsInputDisabled, setTagsInputDisabled] = useState(true);
   const [startFrom, setStartFrom] = useState(InitialStartFromOrPageNumber);
   const [cursor, setCursor] = useState(-1);
@@ -503,10 +504,19 @@ const LazySelect = React.memo((props) => {
       return;
     }
     SelectionChangedCallBack(selectedDataList);
+    SelectedDataListRef.current = selectedDataList
+      .map((sdl) => sdl[UniqueKey])
+      .join(',');
   }, [selectedDataList]);
 
+  const SelectedDataListRef = useRef(null);
+
   useEffect(() => {
-    setSelectedDataList(SelectedDataList);
+    const newRef = SelectedDataList.map((sdl) => sdl[UniqueKey]).join(',');
+    if (newRef != SelectedDataListRef.current) {
+      SelectedDataListRef.current = newRef;
+      setSelectedDataList(SelectedDataList);
+    }
   }, [SelectedDataList]);
 
   const firstUpdateForSelectAllOptions = useRef(true);

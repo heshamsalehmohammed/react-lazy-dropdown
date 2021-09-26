@@ -186,7 +186,7 @@ stories.add('App', () => {
           usePathParams={false}
           PathParameterArrangement={['From', 'Size']}
           PageSize={10}
-          useStartFromApproach={true}
+          useStartFromApproach={false}
           usePageNumberApproach={true}
           InitialStartFromOrPageNumber={1}
           SearchRequestParamName={'SearchKeyword'}
@@ -217,6 +217,7 @@ stories.add('App', () => {
           ForceCloseDropDown={false}
           SetForceCloseDropDown={() => {}}
           SelectAllOptions={selectAll}
+          ClosePopupAfterSelectionForNotMulti
         />
       </div>
     </>
