@@ -64,6 +64,7 @@ const LazySelect = React.memo((props) => {
     DisplayUnselectAllButton = true,
     SelectAllOptions = false,
     ClosePopupAfterSelectionForNotMulti = false,
+    scrollThreshold = 0.8,
   } = props;
 
   if (!UniqueKey) {
@@ -227,6 +228,7 @@ const LazySelect = React.memo((props) => {
     }
     if (scrolled) {
       setScrolled(false);
+      enableScroll(optionsContainerRef.current);
     }
     if (searched) {
       setSearched(false);
@@ -247,6 +249,7 @@ const LazySelect = React.memo((props) => {
 
   useEffect(() => {
     if (scrolled) {
+      lockScroll(optionsContainerRef.current);
       fetchDataList();
     }
   }, [scrolled]);
@@ -293,6 +296,9 @@ const LazySelect = React.memo((props) => {
         setSelectedDataList((prevState) => {
           if (checked) {
             setSearch(objectOfList[DisplayBy]);
+            if (ClosePopupAfterSelectionForNotMulti) {
+              closeDropDownActions();
+            }
             return [objectOfList];
           }
           return [];
@@ -447,7 +453,7 @@ const LazySelect = React.memo((props) => {
     if (Virtualized) {
       scollPos(optionsContainer);
     }
-    const atBottom = isElementAtBottom(optionsContainer, 0.98);
+    const atBottom = isElementAtBottom(optionsContainer, scrollThreshold);
     if (atBottom && atBottom !== prevAtBottom.current) {
       setScrolled(true);
     }
@@ -643,6 +649,17 @@ const LazySelect = React.memo((props) => {
       SetForceCloseDropDown(false);
     }
   }, [ForceCloseDropDown]);
+
+  const lockScroll = (element) => {Logger.LogMessage("scroll locked")
+    var lockedScrollTop = element.scrollTop;
+    element.onscroll = () => {
+      element.scrollTop = lockedScrollTop;
+    };
+  };
+
+  const enableScroll = (element) => {
+    element.onscroll = optionsContainerScrollHandler;
+  };
 
   return (
     <div className="lazyselect-select" ref={lazySelectRef}>

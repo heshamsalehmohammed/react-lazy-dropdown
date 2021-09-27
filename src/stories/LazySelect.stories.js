@@ -124,7 +124,7 @@ stories.add('App', () => {
       PreferdTermSid: '((IXB3',
       PreferdTerm: 'EAR - DRY',
     },
-    {
+    /*     {
       Oid: '((IYB3',
       PreferdCodeSid: '((IYB3',
       PreferdCode: 'EARLIQ',
@@ -137,16 +137,16 @@ stories.add('App', () => {
       PreferdCodeSid: 'jkTYB5',
       PreferdTerm: 'CHEMICAL APPLIED USING POTTER TOWER',
       PreferdTermSid: 'jkTZB5',
-    },
+    }, */
   ]);
   const ChangeSelectedDataListHandler = () => {
     setSelectedValues([
       {
-        Oid: '((IWB3',
-        PreferdCodeSid: '((IWB3',
-        PreferdCode: 'EARDRY',
-        PreferdTermSid: '((IXB3',
-        PreferdTerm: 'EAR - DRY',
+        Oid: '((IYB3',
+        PreferdCodeSid: '((IYB3',
+        PreferdCode: 'EARLIQ',
+        PreferdTermSid: '((IZB3',
+        PreferdTerm: 'EAR - LIQUID',
       },
     ]);
   };
@@ -199,7 +199,7 @@ stories.add('App', () => {
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
           SelectionChangedCallBack={selectionChangedCallBack}
           SelectedDataList={selectedValues}
-          IsMulti={true}
+          IsMulti={false}
           DisplayTags={true}
           Virtualized={false}
           numVisibleItems={10}
@@ -216,7 +216,8 @@ stories.add('App', () => {
           ForceCloseDropDown={false}
           SetForceCloseDropDown={() => {}}
           SelectAllOptions={selectAll}
-          ClosePopupAfterSelectionForNotMulti
+          ClosePopupAfterSelectionForNotMulti={false}
+          scrollThreshold={0.8}
         />
       </div>
     </>
