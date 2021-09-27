@@ -301,6 +301,7 @@ const LazySelect = React.memo((props) => {
             }
             return [objectOfList];
           }
+          setSearch('');
           return [];
         });
       }
@@ -309,6 +310,9 @@ const LazySelect = React.memo((props) => {
 
   const UnselectAllHandler = () => {
     setSelectedDataList((prevState) => {
+      if(!IsMulti){
+        setSearch('');
+      }
       return [];
     });
   };
