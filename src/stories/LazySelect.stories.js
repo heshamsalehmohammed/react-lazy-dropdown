@@ -199,7 +199,7 @@ stories.add('App', () => {
           DisplayShowMoreOptionCallBack={displayShowMoreOptionCallBack}
           SelectionChangedCallBack={selectionChangedCallBack}
           SelectedDataList={selectedValues}
-          IsMulti={false}
+          IsMulti={true}
           DisplayTags={true}
           Virtualized={false}
           numVisibleItems={10}
@@ -218,6 +218,8 @@ stories.add('App', () => {
           SelectAllOptions={selectAll}
           ClosePopupAfterSelectionForNotMulti={false}
           scrollThreshold={0.8}
+          ShowSelectAllCheckBoxForMulti
+          SelectAllText={'Select All Loaded'}
         />
       </div>
     </>

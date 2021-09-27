@@ -65,6 +65,8 @@ const LazySelect = React.memo((props) => {
     SelectAllOptions = false,
     ClosePopupAfterSelectionForNotMulti = false,
     scrollThreshold = 0.8,
+    ShowSelectAllCheckBoxForMulti = false,
+    SelectAllText = 'Select All',
   } = props;
 
   if (!UniqueKey) {
@@ -310,7 +312,7 @@ const LazySelect = React.memo((props) => {
 
   const UnselectAllHandler = () => {
     setSelectedDataList((prevState) => {
-      if(!IsMulti){
+      if (!IsMulti) {
         setSearch('');
       }
       return [];
@@ -501,6 +503,23 @@ const LazySelect = React.memo((props) => {
     }
   }, [SelectAllOptions]);
 
+  const isAllSelected = () => {
+    const selectedDataListIdsList = selectedDataList.map(
+      (sdl) => sdl[UniqueKey]
+    );
+    return localDataList.every((ldl) =>
+      selectedDataListIdsList.includes(ldl[UniqueKey])
+    );
+  };
+
+  const toggleSelectAllHandler = () => {
+    if (isAllSelected()) {
+      UnselectAllHandler();
+    } else {
+      SelectAllHandler();
+    }
+  };
+
   const getSelectOutput = () => {
     if (IsMulti) {
       return (
@@ -654,7 +673,8 @@ const LazySelect = React.memo((props) => {
     }
   }, [ForceCloseDropDown]);
 
-  const lockScroll = (element) => {Logger.LogMessage("scroll locked")
+  const lockScroll = (element) => {
+    Logger.LogMessage('scroll locked');
     var lockedScrollTop = element.scrollTop;
     element.onscroll = () => {
       element.scrollTop = lockedScrollTop;
@@ -705,6 +725,24 @@ const LazySelect = React.memo((props) => {
               minWidth: lazySelectBoundingClientRect.width,
               height: OptionsBoxHeight,
             }}>
+            {IsMulti &&
+              ShowSelectAllCheckBoxForMulti &&
+              localDataList.length > 0 && (
+                <div className="lazyselect-selectall-container">
+                  <div className="selectall-checkbox">
+                    <input
+                      type="checkbox"
+                      onChange={toggleSelectAllHandler}
+                      className={
+                        'lazyselect-selectall-input lazyselectcheckbox'
+                      }
+                      title={'Select All'}
+                      checked={isAllSelected()}
+                    />
+                    <label>{SelectAllText}</label>
+                  </div>
+                </div>
+              )}
             <div
               className="lazyselectcheckbox-list-container"
               style={containerStyle}>
